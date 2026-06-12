@@ -1,0 +1,189 @@
+{
+  "chapters": {
+    "1": [
+      {
+        "question": "What is the primary characteristic of an entrepreneur?",
+        "options": [
+          "They only want to count virtual coins in a game.",
+          "They notice a problem and take the initiative to build a solution.",
+          "They work a normal 9-to-5 job without taking any risks.",
+          "They only sell products that their parents make."
+        ],
+        "correct": "They notice a problem and take the initiative to build a solution.",
+        "explanation": "An entrepreneur is someone who identifies a problem in society or around them and takes the initiative to create a business solution."
+      },
+      {
+        "question": "Which problem did Paytm solve when it was first created?",
+        "options": [
+          "Delivering food to remote places in 10 minutes.",
+          "Helping people make secure cash-free digital payments easily.",
+          "Building school notice boards using eco-friendly wood.",
+          "Creating 3D avatars for mobile games."
+        ],
+        "correct": "Helping people make secure cash-free digital payments easily.",
+        "explanation": "Paytm started by addressing the difficulty of doing easy, cash-free mobile recharges and bill payments in India."
+      },
+      {
+        "question": "What is the concept of Socratic questioning that Professor Vikash uses?",
+        "options": [
+          "Asking questions to guide a student to discover answers on their own.",
+          "Giving the student all the answers directly to save time.",
+          "Testing students with extremely hard trick questions.",
+          "Translating every English word into Hindi."
+        ],
+        "correct": "Asking questions to guide a student to discover answers on their own.",
+        "explanation": "Socratic questioning is a teaching method that uses guided questions to help students think critically and find answers themselves."
+      }
+    ],
+    "2": [
+      {
+        "question": "What is the difference between a product and a service?",
+        "options": [
+          "A product is digital; a service is physical.",
+          "A product is a physical item you can hold; a service is an action performed for you.",
+          "A product is always free; a service always costs virtual rupees.",
+          "There is no difference; they are exactly the same."
+        ],
+        "correct": "A product is a physical item you can hold; a service is an action performed for you.",
+        "explanation": "Products are tangible goods (like a samosa or a pencil), whereas services are activities provided by other people (like rickshaw rides or hair cuts)."
+      },
+      {
+        "question": "If you buy a subscription for a monthly stationery box, what type of business model is that?",
+        "options": [
+          "One-time transaction model",
+          "Subscription business model",
+          "Commission-based model",
+          "Ad-supported free model"
+        ],
+        "correct": "Subscription business model",
+        "explanation": "A subscription model involves customers paying a recurring fee (monthly/yearly) to get access to a product or service continually."
+      }
+    ],
+    "3": [
+      {
+        "question": "To spot problems that can become business opportunities, what skill is most important?",
+        "options": [
+          "Coding in TypeScript",
+          "Observation and empathy",
+          "Having a lot of startup cash",
+          "Hiring a senior CFO immediately"
+        ],
+        "correct": "Observation and empathy",
+        "explanation": "Empathy helps you understand other people's frustrations, and keen observation lets you notice where things are failing in their daily lives."
+      },
+      {
+        "question": "In the school canteen, if students spend all recess in a queue, what is the core problem?",
+        "options": [
+          "The samosas are too delicious.",
+          "The queue management and service speed are inefficient.",
+          "The recess duration is too long.",
+          "The school is charging too many coins."
+        ],
+        "correct": "The queue management and service speed are inefficient.",
+        "explanation": "The bottleneck is the queue speed. Serving food faster or letting students pre-order would solve the wasted recess time."
+      }
+    ],
+    "4": [
+      {
+        "question": "When ranking problems for opportunity mapping, what three factors do we use?",
+        "options": [
+          "Color, weight, and price of the product.",
+          "Size, Frequency, and Solvability.",
+          "Name of the founder, logo design, and team size.",
+          "School board type, student grade, and classroom name."
+        ],
+        "correct": "Size, Frequency, and Solvability.",
+        "explanation": "Opportunity mapping evaluates how many people face the problem (Size), how often it happens (Frequency), and how feasible it is to solve (Solvability)."
+      },
+      {
+        "question": "What kind of problem represents the best business opportunity?",
+        "options": [
+          "Low impact, high effort",
+          "High impact, low effort",
+          "Low impact, low effort",
+          "High impact, high effort"
+        ],
+        "correct": "High impact, low effort",
+        "explanation": "Problems that have high impact when solved but require relatively low effort/cost to build a solution for are the sweet spots for startups."
+      }
+    ],
+    "5": [
+      {
+        "question": "What is the purpose of an Ideation Canvas?",
+        "options": [
+          "To paint a portrait of the company founder.",
+          "To quickly sketch out and structure your startup idea across key areas.",
+          "To keep track of the daily login streak of your classmates.",
+          "To generate 3D shadows on integrated graphics."
+        ],
+        "correct": "To quickly sketch out and structure your startup idea across key areas.",
+        "explanation": "An ideation canvas is a visual tool used to brainstorm, refine, and structure the key parts of a new business idea on a single page."
+      }
+    ],
+    "6": [
+      {
+        "question": "Why do we conduct customer interviews before building a product?",
+        "options": [
+          "To convince customers to give us their email address.",
+          "To validate if the problem is real and if people actually want a solution.",
+          "To tell them how awesome our startup logo looks.",
+          "To ask them to hire our mid-level CMO."
+        ],
+        "correct": "To validate if the problem is real and if people actually want a solution.",
+        "explanation": "Validation interviews ensure that you don't waste time and money building a product that nobody wants or needs."
+      }
+    ],
+    "7": [
+      {
+        "question": "Which of these is NOT a key part of brand identity?",
+        "options": [
+          "A memorable company name",
+          "A clean, recognizable logo",
+          "A clear mission statement",
+          "The daily salary of your Operations Head"
+        ],
+        "correct": "The daily salary of your Operations Head",
+        "explanation": "Brand identity is how the customer perceives your business (name, logo, colors, mission), not internal financial details like staff salary."
+      }
+    ],
+    "8": [
+      {
+        "question": "Why is complementary skills important when hiring a team?",
+        "options": [
+          "So everyone is an expert in the exact same subject.",
+          "So team members have different skills that balance and support each other.",
+          "To pay everyone the lowest possible junior salary.",
+          "To ensure the team has 5 CEOs."
+        ],
+        "correct": "So team members have different skills that balance and support each other.",
+        "explanation": "Complementary skills mean hiring a mix of experts (like finance, marketing, and operations) so all areas of the business are managed well."
+      }
+    ],
+    "9": [
+      {
+        "question": "If your selling price is ₹50 and your unit cost is ₹20, what is your profit margin per unit?",
+        "options": [
+          "₹70",
+          "₹30",
+          "₹20",
+          "₹50"
+        ],
+        "correct": "₹30",
+        "explanation": "Profit margin = Selling Price (₹50) - Unit Cost (₹20) = ₹30."
+      }
+    ],
+    "10": [
+      {
+        "question": "What is the main goal of a Startup Pitch?",
+        "options": [
+          "To explain every tiny line of code in the product.",
+          "To clearly communicate your problem, solution, business model, and traction to get support.",
+          "To show off your high-end graphics performance.",
+          "To request a refund from the school principal."
+        ],
+        "correct": "To clearly communicate your problem, solution, business model, and traction to get support.",
+        "explanation": "A pitch is a concise presentation designed to convince investors or partners to support your business by showing clear value and success metrics."
+      }
+    ]
+  }
+}

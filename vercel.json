@@ -1,0 +1,13 @@
+{
+  "framework": "vite",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build -w apps/web",
+  "outputDirectory": "apps/web/dist",
+  "devCommand": "npm run dev -w apps/web",
+  "rewrites": [
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
