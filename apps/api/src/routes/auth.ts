@@ -8,6 +8,7 @@ import { authMiddleware, AuthenticatedRequest } from '../middleware/auth';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'campusedge-development-secret-key-32-chars';
+const JWT_EXPIRES_IN_VALUE = (process.env.JWT_EXPIRES_IN || '7d').replace(/^["']|["']$/g, '').trim();
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 // POST /api/v1/auth/register
@@ -100,7 +101,7 @@ router.post('/register', validateBody(registerSchema), async (req: Request, res:
 
     // Generate JWT
     const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, {
-      expiresIn: JWT_EXPIRES_IN as any,
+      expiresIn: JWT_EXPIRES_IN_VALUE as any,
     });
 
     const userWithProfile = await prisma.user.findUnique({
@@ -176,14 +177,18 @@ router.post('/login', validateBody(loginSchema), async (req: Request, res: Respo
 
     // Update student activity date if student logs in
     if (user.student) {
-      await prisma.student.update({
-        where: { id: user.student.id },
-        data: { lastActiveAt: new Date() }
-      });
+      try {
+        await prisma.student.update({
+          where: { id: user.student.id },
+          data: { lastActiveAt: new Date() }
+        });
+      } catch (activeErr) {
+        console.warn('Failed to update student activity:', activeErr);
+      }
     }
 
     const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, {
-      expiresIn: JWT_EXPIRES_IN as any
+      expiresIn: JWT_EXPIRES_IN_VALUE as any
     });
 
     const { passwordHash: _, ...userSafe } = user as any;

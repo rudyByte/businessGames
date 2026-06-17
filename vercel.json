@@ -1,7 +1,7 @@
 {
   "framework": "vite",
   "installCommand": "npm install",
-  "buildCommand": "npm run build -w apps/web",
+  "buildCommand": "npx prisma generate --schema apps/api/prisma/schema.prisma && npm run build -w packages/shared && npm run build -w apps/web",
   "outputDirectory": "apps/web/dist",
   "devCommand": "npm run dev -w apps/web",
   "rewrites": [

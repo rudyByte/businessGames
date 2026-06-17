@@ -1,7 +1,40 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
-import { GraduationCap, Lock, Mail, Users, ArrowRight } from 'lucide-react';
+import { GraduationCap, Lock, Mail, ArrowRight, ShieldAlert, BookOpen, Gamepad2, Sparkles, ExternalLink } from 'lucide-react';
+
+const DEMO_ACCOUNTS = [
+  {
+    role: 'STUDENT' as const,
+    email: 'aryan@student.com',
+    password: 'User@123',
+    label: 'Student Demo',
+    description: 'Play quests, earn XP, climb leaderboards',
+    icon: Gamepad2,
+    color: 'purple',
+    redirect: '/student',
+  },
+  {
+    role: 'FACULTY' as const,
+    email: 'sharma@dps.in',
+    password: 'User@123',
+    label: 'Faculty Demo',
+    description: 'Track progress, create assignments',
+    icon: BookOpen,
+    color: 'blue',
+    redirect: '/faculty',
+  },
+  {
+    role: 'SUPER_ADMIN' as const,
+    email: 'admin@campusedge.in',
+    password: 'Admin@123',
+    label: 'Admin Demo',
+    description: 'Manage schools, view platform stats',
+    icon: ShieldAlert,
+    color: 'red',
+    redirect: '/admin',
+  },
+] as const;
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -12,6 +45,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [demoLoading, setDemoLoading] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +58,6 @@ export default function LoginPage() {
 
     try {
       await login({ email, passwordHash: password });
-      // Redirect based on role cached in localStorage or store
       const user = useAuthStore.getState().user;
       if (user) {
         if (user.role === 'STUDENT') navigate('/student');
@@ -33,8 +66,46 @@ export default function LoginPage() {
         else if (user.role === 'SUPER_ADMIN') navigate('/admin');
       }
     } catch (err) {
-      // Handled by store, but let's keep error local if needed
+      // Handled by store
     }
+  };
+
+  const handleDemoLogin = async (account: typeof DEMO_ACCOUNTS[number]) => {
+    setDemoLoading(account.role);
+    setError(null);
+
+    try {
+      await login({ email: account.email, passwordHash: account.password });
+      const user = useAuthStore.getState().user;
+      if (user) {
+        navigate(account.redirect);
+      }
+    } catch (err: any) {
+      setError(err?.response?.data?.error?.message || 'Demo login failed. Make sure the API server is running.');
+    } finally {
+      setDemoLoading(null);
+    }
+  };
+
+  const colorClasses = {
+    purple: {
+      bg: 'bg-purple-600 hover:bg-purple-700 active:bg-purple-800',
+      border: 'border-purple-500/30',
+      text: 'text-purple-400',
+      badge: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+    },
+    blue: {
+      bg: 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800',
+      border: 'border-blue-500/30',
+      text: 'text-blue-400',
+      badge: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+    },
+    red: {
+      bg: 'bg-red-600 hover:bg-red-700 active:bg-red-800',
+      border: 'border-red-500/30',
+      text: 'text-red-400',
+      badge: 'bg-red-500/10 text-red-400 border-red-500/20',
+    },
   };
 
   return (
@@ -52,13 +123,63 @@ export default function LoginPage() {
           <p className="text-slate-400 mt-2 text-sm">Learn Business. Build Empires. One Quest at a Time.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {(error || authError) && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-xs">
-              {error || authError}
-            </div>
-          )}
+        {/* Error display */}
+        {(error || authError) && (
+          <div className="mb-6 bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-xs">
+            {error || authError}
+          </div>
+        )}
 
+        {/* Demo Quick Login Buttons */}
+        <div className="space-y-3 mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="h-3.5 w-3.5 text-yellow-400" />
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Quick Demo Access</span>
+          </div>
+
+          {DEMO_ACCOUNTS.map((account) => {
+            const Icon = account.icon;
+            const colors = colorClasses[account.color];
+            const isLoading = demoLoading === account.role;
+
+            return (
+              <button
+                key={account.role}
+                onClick={() => handleDemoLogin(account)}
+                disabled={demoLoading !== null}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white text-sm font-medium transition-all ${colors.bg} ${colors.border} border disabled:opacity-60 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] disabled:scale-100`}
+              >
+                <div className={`p-1.5 rounded-lg ${colors.badge}`}>
+                  {isLoading ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                  ) : (
+                    <Icon className="h-4 w-4" />
+                  )}
+                </div>
+                <div className="flex-1 text-left">
+                  <span className="text-xs font-semibold">{account.label}</span>
+                  <p className="text-[10px] text-white/60">{account.description}</p>
+                </div>
+                <ExternalLink className="h-3.5 w-3.5 text-white/40" />
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Divider */}
+        <div className="relative mb-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-slate-800" />
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-slate-950/80 px-3 text-[10px] text-slate-500 font-semibold uppercase tracking-wider">
+              Or sign in manually
+            </span>
+          </div>
+        </div>
+
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
               Email Address
@@ -112,11 +233,11 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="mt-8 border-t border-slate-900 pt-6">
+        <div className="mt-6 border-t border-slate-900 pt-5">
           <p className="text-center text-[10px] text-slate-500">
-            Delhi Public School & Mumbai International School Demo Logins:<br />
-            Student: <code className="text-slate-400">aryan@student.com</code> | Teacher: <code className="text-slate-400">sharma@dps.in</code> | Parent: <code className="text-slate-400">parent.goel@parent.com</code> | Admin: <code className="text-slate-400">admin@campusedge.in</code><br />
-            Password: <code className="text-slate-400">User@123</code> (Admin: <code className="text-slate-400">Admin@123</code>)
+            <Link to="/demo" className="text-purple-400 hover:underline">
+              View demo overview & sitemap ↗
+            </Link>
           </p>
         </div>
       </div>

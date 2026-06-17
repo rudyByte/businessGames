@@ -6,6 +6,9 @@ import { useAuthStore } from './stores/authStore';
 import LoginPage from './components/auth/LoginPage';
 import RegisterPage from './components/auth/RegisterPage';
 
+// Demo Page
+import DemoPage from './pages/DemoPage';
+
 // Layouts
 import StudentLayout from './layouts/StudentLayout';
 import FacultyLayout from './layouts/FacultyLayout';
@@ -65,6 +68,7 @@ export default function App() {
         {/* Public Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/demo" element={<DemoPage />} />
 
         {/* Student Protected Routes */}
         <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>

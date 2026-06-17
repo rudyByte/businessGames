@@ -22,6 +22,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(generalLimiter);
 app.use('/api/v1', apiRouter);
+app.use('/v1', apiRouter);
 
 app.get('/', (req, res) => {
   res.redirect('/api/v1/health');
