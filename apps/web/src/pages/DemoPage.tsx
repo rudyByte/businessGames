@@ -100,7 +100,7 @@ export default function DemoPage() {
             <button
               onClick={() => handleDemoLogin('student')}
               disabled={loggingIn !== null}
-              className="flex items-center gap-3 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 text-white font-semibold text-sm py-3 px-6 rounded-xl border border-purple-500/30 transition-all hover:scale-105 active:scale-95 disabled:scale-100"
+              className="flex items-center gap-3 neumorph-btn-shadow bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 text-white font-semibold text-sm py-3 px-6 rounded-xl transition-all"
             >
               {loggingIn === 'student' ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
@@ -114,7 +114,7 @@ export default function DemoPage() {
             <button
               onClick={() => handleDemoLogin('faculty')}
               disabled={loggingIn !== null}
-              className="flex items-center gap-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white font-semibold text-sm py-3 px-6 rounded-xl border border-blue-500/30 transition-all hover:scale-105 active:scale-95 disabled:scale-100"
+              className="flex items-center gap-3 neumorph-btn-shadow bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white font-semibold text-sm py-3 px-6 rounded-xl transition-all"
             >
               {loggingIn === 'faculty' ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
@@ -128,7 +128,7 @@ export default function DemoPage() {
             <button
               onClick={() => handleDemoLogin('admin')}
               disabled={loggingIn !== null}
-              className="flex items-center gap-3 bg-red-600 hover:bg-red-700 disabled:bg-red-800 text-white font-semibold text-sm py-3 px-6 rounded-xl border border-red-500/30 transition-all hover:scale-105 active:scale-95 disabled:scale-100"
+              className="flex items-center gap-3 neumorph-btn-shadow bg-red-600 hover:bg-red-700 disabled:bg-red-800 text-white font-semibold text-sm py-3 px-6 rounded-xl transition-all"
             >
               {loggingIn === 'admin' ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
@@ -142,7 +142,7 @@ export default function DemoPage() {
             <button
               onClick={() => handleDemoLogin('parent')}
               disabled={loggingIn !== null}
-              className="flex items-center gap-3 bg-green-600 hover:bg-green-700 disabled:bg-green-800 text-white font-semibold text-sm py-3 px-6 rounded-xl border border-green-500/30 transition-all hover:scale-105 active:scale-95 disabled:scale-100"
+              className="flex items-center gap-3 neumorph-btn-shadow bg-green-600 hover:bg-green-700 disabled:bg-green-800 text-white font-semibold text-sm py-3 px-6 rounded-xl transition-all"
             >
               {loggingIn === 'parent' ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />

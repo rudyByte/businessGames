@@ -275,8 +275,8 @@ export default function ParentOverviewPage() {
             onClick={() => setSelectedChild(child.id)}
             className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all border ${
               selectedChild === child.id
-                ? 'bg-green-600 text-white border-green-500/40 shadow-lg shadow-green-500/10'
-                : 'bg-slate-900/80 text-slate-300 border-slate-800 hover:border-green-500/30 hover:text-white'
+                ? 'bg-green-600 text-white neumorph-btn-shadow'
+                : 'neumorph-btn text-slate-300 hover:text-white'
             }`}
           >
             <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
@@ -335,7 +335,7 @@ export default function ParentOverviewPage() {
             ].map((stat, i) => {
               const Icon = stat.icon;
               return (
-                <div key={i} className={`glass-panel p-4 rounded-xl border ${stat.color} space-y-1.5`}>
+                <div key={i} className={`neumorph p-4 rounded-xl space-y-1.5`}>
                   <div className="flex items-center gap-2">
                     <Icon className={`h-4 w-4 ${stat.color.split(' ')[0]}`} />
                     <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">{stat.label}</span>

@@ -81,7 +81,7 @@ export default function StudentHomePage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-6 bg-slate-900/60 p-4 rounded-xl border border-slate-800 self-stretch md:self-auto justify-around">
+        <div className="flex items-center gap-6 neumorph p-4 rounded-xl self-stretch md:self-auto justify-around">
           <div className="text-center px-4 border-r border-slate-800">
             <div className="flex items-center justify-center gap-1 text-orange-400 mb-1">
               <Flame className="h-5 w-5 fill-orange-400/20" />
@@ -190,11 +190,11 @@ export default function StudentHomePage() {
 
             <div className="space-y-3">
               {leaderboard.map((entry, idx) => (
-                <div key={idx} className="flex items-center justify-between p-2.5 bg-slate-900/60 rounded-xl border border-slate-800/40">
+                <div key={idx} className="flex items-center justify-between p-2.5 neumorph rounded-xl">
                   <div className="flex items-center gap-3">
                     <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
                       idx === 0 ? 'bg-yellow-500/20 text-yellow-400' :
-                      idx === 1 ? 'bg-slate-450/20 text-slate-350' : 'bg-orange-500/20 text-orange-400'
+                      idx === 1 ? 'bg-slate-500/20 text-slate-300' : 'bg-orange-500/20 text-orange-400'
                     }`}>
                       {entry.rank}
                     </span>

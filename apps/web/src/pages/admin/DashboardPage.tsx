@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../lib/api';
-import { School, Users, ShieldAlert, Plus, MapPin } from 'lucide-react';
+import { School, Users, ShieldAlert, Plus, MapPin, Trophy } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<any>({});
@@ -67,80 +67,80 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto font-sans">
+    <div className="space-y-6 max-w-6xl mx-auto font-sans">
       {/* Overview Cards */}
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="glass-panel p-6 rounded-2xl border border-red-500/10 flex items-center gap-4">
-          <div className="p-3 bg-red-500/10 text-red-400 rounded-xl">
-            <School className="h-6 w-6" />
+      <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="neumorph p-5 rounded-xl flex items-center gap-3">
+          <div className="p-2.5 bg-red-500/10 text-red-400 rounded-lg">
+            <School className="h-5 w-5" />
           </div>
           <div>
-            <span className="text-[10px] text-slate-500 uppercase font-semibold">Total Schools</span>
-            <h3 className="text-2xl font-bold text-white mt-1">{stats.totalSchools}</h3>
+            <span className="text-[9px] text-slate-500 uppercase font-semibold tracking-wider">Total Schools</span>
+            <h3 className="text-xl font-bold text-white mt-0.5">{stats.totalSchools}</h3>
           </div>
         </div>
 
-        <div className="glass-panel p-6 rounded-2xl border border-red-500/10 flex items-center gap-4">
-          <div className="p-3 bg-purple-500/10 text-purple-400 rounded-xl">
-            <Users className="h-6 w-6" />
+        <div className="neumorph p-5 rounded-xl flex items-center gap-3">
+          <div className="p-2.5 bg-purple-500/10 text-purple-400 rounded-lg">
+            <Users className="h-5 w-5" />
           </div>
           <div>
-            <span className="text-[10px] text-slate-500 uppercase font-semibold">Total Students</span>
-            <h3 className="text-2xl font-bold text-white mt-1">{stats.totalStudents}</h3>
+            <span className="text-[9px] text-slate-500 uppercase font-semibold tracking-wider">Total Students</span>
+            <h3 className="text-xl font-bold text-white mt-0.5">{stats.totalStudents}</h3>
           </div>
         </div>
 
-        <div className="glass-panel p-6 rounded-2xl border border-red-500/10 flex items-center gap-4">
-          <div className="p-3 bg-blue-500/10 text-blue-400 rounded-xl">
-            <ShieldAlert className="h-6 w-6" />
+        <div className="neumorph p-5 rounded-xl flex items-center gap-3">
+          <div className="p-2.5 bg-blue-500/10 text-blue-400 rounded-lg">
+            <Users className="h-5 w-5" />
           </div>
           <div>
-            <span className="text-[10px] text-slate-500 uppercase font-semibold">Total Faculty</span>
-            <h3 className="text-2xl font-bold text-white mt-1">{stats.totalFaculty}</h3>
+            <span className="text-[9px] text-slate-500 uppercase font-semibold tracking-wider">Total Faculty</span>
+            <h3 className="text-xl font-bold text-white mt-0.5">{stats.totalFaculty}</h3>
           </div>
         </div>
 
-        <div className="glass-panel p-6 rounded-2xl border border-red-500/10 flex items-center gap-4">
-          <div className="p-3 bg-green-500/10 text-green-400 rounded-xl">
-            <ShieldAlert className="h-6 w-6" />
+        <div className="neumorph p-5 rounded-xl flex items-center gap-3">
+          <div className="p-2.5 bg-green-500/10 text-green-400 rounded-lg">
+            <Trophy className="h-5 w-5" />
           </div>
           <div>
-            <span className="text-[10px] text-slate-500 uppercase font-semibold">Completed Runs</span>
-            <h3 className="text-2xl font-bold text-white mt-1">{stats.completions}</h3>
+            <span className="text-[9px] text-slate-500 uppercase font-semibold tracking-wider">Completions</span>
+            <h3 className="text-xl font-bold text-white mt-0.5">{stats.completions}</h3>
           </div>
         </div>
       </section>
 
       {/* Grid: School Listings and Create School */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Schools Table */}
-        <div className="lg:col-span-2 glass-panel p-6 rounded-2xl border border-slate-800 space-y-6">
-          <h3 className="font-bold font-display text-white text-base">Registered Schools</h3>
+        <div className="lg:col-span-2 glass-panel p-5 rounded-xl border border-slate-800 space-y-4">
+          <h3 className="font-bold font-display text-white text-sm">Registered Schools</h3>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-800 text-slate-500 font-semibold">
-                  <th className="pb-3 pr-2">School Name</th>
-                  <th className="pb-3 pr-2">Location</th>
-                  <th className="pb-3 pr-2">Board</th>
-                  <th className="pb-3 pr-2">Students</th>
-                  <th className="pb-3">Faculty</th>
+                <tr className="border-b border-slate-800/60 text-slate-500 font-semibold">
+                  <th className="pb-2.5 pr-2">School Name</th>
+                  <th className="pb-2.5 pr-2">Location</th>
+                  <th className="pb-2.5 pr-2">Board</th>
+                  <th className="pb-2.5 pr-2">Students</th>
+                  <th className="pb-2.5">Faculty</th>
                 </tr>
               </thead>
               <tbody>
                 {schools.map((school: any) => (
-                  <tr key={school.id} className="border-b border-slate-900/60 hover:bg-slate-900/20 text-slate-350 transition-colors">
-                    <td className="py-3 pr-2 text-white font-medium">{school.name}</td>
-                    <td className="py-3 pr-2">
+                  <tr key={school.id} className="border-b border-slate-900/60 hover:bg-white/[0.02] text-slate-300 transition-colors">
+                    <td className="py-2.5 pr-2 text-white font-medium">{school.name}</td>
+                    <td className="py-2.5 pr-2">
                       <span className="flex items-center gap-1">
                         <MapPin className="h-3 w-3 text-slate-500" />
                         {school.city}, {school.state}
                       </span>
                     </td>
-                    <td className="py-3 pr-2 font-semibold text-red-400">{school.boardType}</td>
-                    <td className="py-3 pr-2">{school._count.students}</td>
-                    <td className="py-3">{school._count.faculty}</td>
+                    <td className="py-2.5 pr-2 font-semibold text-red-400">{school.boardType}</td>
+                    <td className="py-2.5 pr-2">{school._count.students}</td>
+                    <td className="py-2.5">{school._count.faculty}</td>
                   </tr>
                 ))}
               </tbody>
@@ -149,22 +149,22 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Add School Form */}
-        <div className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-6">
-          <h3 className="font-bold font-display text-white text-base text-red-400">Add New School</h3>
+        <div className="glass-panel p-5 rounded-xl border border-slate-800 space-y-4">
+          <h3 className="font-bold font-display text-white text-sm text-red-400">Add New School</h3>
 
           {isSuccess && (
-            <div className="bg-green-500/10 border border-green-500/20 text-green-400 p-3 rounded-lg text-xs">
+            <div className="bg-green-500/10 border border-green-500/20 text-green-400 p-2.5 rounded-lg text-[11px]">
               School registered successfully!
             </div>
           )}
 
-          <form onSubmit={handleCreateSchool} className="space-y-4 text-xs">
+          <form onSubmit={handleCreateSchool} className="space-y-3 text-xs">
             <div>
               <label className="block text-slate-400 font-semibold mb-1">School Name</label>
               <input
                 type="text"
                 required
-                className="w-full bg-slate-900 border border-slate-850 rounded-lg p-2.5 text-white outline-none focus:border-red-500"
+                className="w-full bg-slate-900/60 border border-slate-800 rounded-lg p-2 text-white text-xs outline-none focus:border-red-500/50 transition-colors"
                 placeholder="e.g. Kendriya Vidyalaya"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -177,7 +177,7 @@ export default function AdminDashboardPage() {
                 <input
                   type="text"
                   required
-                  className="w-full bg-slate-900 border border-slate-850 rounded-lg p-2.5 text-white outline-none focus:border-red-500"
+                  className="w-full bg-slate-900/60 border border-slate-800 rounded-lg p-2 text-white text-xs outline-none focus:border-red-500/50 transition-colors"
                   placeholder="e.g. Pune"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
@@ -188,7 +188,7 @@ export default function AdminDashboardPage() {
                 <input
                   type="text"
                   required
-                  className="w-full bg-slate-900 border border-slate-850 rounded-lg p-2.5 text-white outline-none focus:border-red-500"
+                  className="w-full bg-slate-900/60 border border-slate-800 rounded-lg p-2 text-white text-xs outline-none focus:border-red-500/50 transition-colors"
                   placeholder="e.g. Maharashtra"
                   value={state}
                   onChange={(e) => setState(e.target.value)}
@@ -199,7 +199,7 @@ export default function AdminDashboardPage() {
             <div>
               <label className="block text-slate-400 font-semibold mb-1">Affiliation Board</label>
               <select
-                className="w-full bg-slate-900 border border-slate-850 rounded-lg p-2.5 text-white outline-none focus:border-red-500"
+                className="w-full bg-slate-900/60 border border-slate-800 rounded-lg p-2 text-white text-xs outline-none focus:border-red-500/50 transition-colors"
                 value={boardType}
                 onChange={(e) => setBoardType(e.target.value)}
               >
@@ -211,9 +211,9 @@ export default function AdminDashboardPage() {
 
             <button
               type="submit"
-              className="w-full bg-red-650 hover:bg-red-750 text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-colors border border-red-500/20"
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all border border-red-500/20 text-xs"
             >
-              <Plus className="h-4 w-4" /> Add School
+              <Plus className="h-3.5 w-3.5" /> Add School
             </button>
           </form>
         </div>

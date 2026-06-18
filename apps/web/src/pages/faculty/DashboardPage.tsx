@@ -79,7 +79,7 @@ export default function FacultyDashboardPage() {
     <div className="space-y-8 max-w-6xl mx-auto font-sans">
       {/* Top Stats Cards */}
       <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="glass-panel p-6 rounded-2xl border border-blue-500/10 flex items-center gap-4">
+        <div className="neumorph p-6 rounded-2xl flex items-center gap-4">
           <div className="p-3 bg-blue-500/10 text-blue-400 rounded-xl">
             <Users className="h-6 w-6" />
           </div>
@@ -89,7 +89,7 @@ export default function FacultyDashboardPage() {
           </div>
         </div>
 
-        <div className="glass-panel p-6 rounded-2xl border border-blue-500/10 flex items-center gap-4">
+        <div className="neumorph p-6 rounded-2xl flex items-center gap-4">
           <div className="p-3 bg-green-500/10 text-green-400 rounded-xl">
             <CheckCircle2 className="h-6 w-6" />
           </div>
@@ -101,7 +101,7 @@ export default function FacultyDashboardPage() {
           </div>
         </div>
 
-        <div className="glass-panel p-6 rounded-2xl border border-blue-500/10 flex items-center gap-4">
+        <div className="neumorph p-6 rounded-2xl flex items-center gap-4">
           <div className="p-3 bg-yellow-500/10 text-yellow-400 rounded-xl">
             <Star className="h-6 w-6" />
           </div>
@@ -111,7 +111,7 @@ export default function FacultyDashboardPage() {
           </div>
         </div>
 
-        <div className="glass-panel p-6 rounded-2xl border border-blue-500/10 flex items-center gap-4">
+        <div className="neumorph p-6 rounded-2xl flex items-center gap-4">
           <div className="p-3 bg-purple-500/10 text-purple-400 rounded-xl">
             <BookOpen className="h-6 w-6" />
           </div>
@@ -192,7 +192,7 @@ export default function FacultyDashboardPage() {
             <div>
               <label className="block text-slate-400 font-semibold mb-1">Classroom</label>
               <select
-                className="w-full bg-slate-900 border border-slate-850 rounded-lg p-2.5 text-white outline-none focus:border-blue-500"
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-white outline-none focus:border-blue-500"
                 value={classroomId}
                 onChange={(e) => setClassroomId(e.target.value)}
               >
@@ -207,7 +207,7 @@ export default function FacultyDashboardPage() {
               <input
                 type="text"
                 required
-                className="w-full bg-slate-900 border border-slate-850 rounded-lg p-2.5 text-white outline-none focus:border-blue-500"
+                className="w-full bg-slate-900/60 border border-slate-800 rounded-lg p-2 text-white text-xs outline-none focus:border-blue-500/50 transition-colors"
                 placeholder="e.g. Complete Chapters 1 to 3"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -217,7 +217,7 @@ export default function FacultyDashboardPage() {
             <div>
               <label className="block text-slate-400 font-semibold mb-1">Target Game</label>
               <select
-                className="w-full bg-slate-900 border border-slate-850 rounded-lg p-2.5 text-white outline-none focus:border-blue-500"
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-white outline-none focus:border-blue-500"
                 value={gameSlug}
                 onChange={(e) => setGameSlug(e.target.value)}
               >
@@ -233,7 +233,7 @@ export default function FacultyDashboardPage() {
                 min={1}
                 max={10}
                 required
-                className="w-full bg-slate-900 border border-slate-850 rounded-lg p-2.5 text-white outline-none focus:border-blue-500"
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-white outline-none focus:border-blue-500"
                 value={chapterNumber}
                 onChange={(e) => setChapterNumber(Number(e.target.value))}
               />

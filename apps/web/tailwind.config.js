@@ -48,8 +48,8 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
-        display: ["Outfit", "sans-serif"],
+        sans: ["Space Grotesk", "Inter", "sans-serif"],
+        display: ["Plus Jakarta Sans", "Outfit", "sans-serif"],
         game: ["Bangers", "cursive"],
       },
     },
