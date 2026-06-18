@@ -29,12 +29,14 @@ import {
   CheckCircle,
   Globe,
   Flame,
+  Heart,
 } from 'lucide-react';
 
 const DEMO_CREDENTIALS = {
   student: { email: 'aryan@student.com', password: 'User@123', label: 'Student Demo', role: 'Student' },
   faculty: { email: 'sharma@dps.in', password: 'User@123', label: 'Faculty Demo', role: 'Faculty' },
   admin: { email: 'admin@campusedge.in', password: 'Admin@123', label: 'Admin Demo', role: 'Admin' },
+  parent: { email: 'parent.goel@parent.com', password: 'User@123', label: 'Parent Demo', role: 'Parent' },
 } as const;
 
 export default function DemoPage() {
@@ -56,6 +58,7 @@ export default function DemoPage() {
         if (role === 'student') navigate('/student');
         else if (role === 'faculty') navigate('/faculty');
         else if (role === 'admin') navigate('/admin');
+        else if (role === 'parent') navigate('/parent');
       }
     } catch (err: any) {
       setError(err?.response?.data?.error?.message || 'Login failed. Make sure the API server is running with seeded data.');
@@ -134,6 +137,20 @@ export default function DemoPage() {
               )}
               <span>Launch Admin Demo</span>
               <ExternalLink className="h-3.5 w-3.5 text-red-300" />
+            </button>
+
+            <button
+              onClick={() => handleDemoLogin('parent')}
+              disabled={loggingIn !== null}
+              className="flex items-center gap-3 bg-green-600 hover:bg-green-700 disabled:bg-green-800 text-white font-semibold text-sm py-3 px-6 rounded-xl border border-green-500/30 transition-all hover:scale-105 active:scale-95 disabled:scale-100"
+            >
+              {loggingIn === 'parent' ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+              ) : (
+                <Heart className="h-4 w-4" />
+              )}
+              <span>Launch Parent Demo</span>
+              <ExternalLink className="h-3.5 w-3.5 text-green-300" />
             </button>
           </div>
 
@@ -453,6 +470,21 @@ export default function DemoPage() {
                     className="mt-3 text-[11px] text-red-400 hover:text-red-300 font-medium flex items-center gap-1"
                   >
                     <ShieldAlert className="h-3 w-3" /> Login as Rajiv
+                  </button>
+                </div>
+                <div className="border border-green-500/20 bg-green-950/10 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    <span className="font-semibold text-white text-xs">Parent</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 font-mono">parent.goel@parent.com</p>
+                  <p className="text-[11px] text-slate-500 font-mono">User@123</p>
+                  <button
+                    onClick={() => handleDemoLogin('parent')}
+                    disabled={loggingIn !== null}
+                    className="mt-3 text-[11px] text-green-400 hover:text-green-300 font-medium flex items-center gap-1"
+                  >
+                    <Heart className="h-3 w-3" /> Login as Mrs. Goel
                   </button>
                 </div>
               </div>

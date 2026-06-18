@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
-import { GraduationCap, Lock, Mail, ArrowRight, ShieldAlert, BookOpen, Gamepad2, Sparkles, ExternalLink } from 'lucide-react';
+import { GraduationCap, Lock, Mail, ArrowRight, ShieldAlert, BookOpen, Gamepad2, Sparkles, ExternalLink, Heart } from 'lucide-react';
 
 const DEMO_ACCOUNTS = [
   {
@@ -33,6 +33,16 @@ const DEMO_ACCOUNTS = [
     icon: ShieldAlert,
     color: 'red',
     redirect: '/admin',
+  },
+  {
+    role: 'PARENT' as const,
+    email: 'parent.goel@parent.com',
+    password: 'User@123',
+    label: 'Parent Demo',
+    description: 'Monitor your child\'s learning progress',
+    icon: Heart,
+    color: 'green',
+    redirect: '/parent',
   },
 ] as const;
 
@@ -105,6 +115,12 @@ export default function LoginPage() {
       border: 'border-red-500/30',
       text: 'text-red-400',
       badge: 'bg-red-500/10 text-red-400 border-red-500/20',
+    },
+    green: {
+      bg: 'bg-green-600 hover:bg-green-700 active:bg-green-800',
+      border: 'border-green-500/30',
+      text: 'text-green-400',
+      badge: 'bg-green-500/10 text-green-400 border-green-500/20',
     },
   };
 

@@ -3,6 +3,18 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+function daysAgo(days: number): Date {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d;
+}
+
+function hoursAgo(hours: number): Date {
+  const d = new Date();
+  d.setHours(d.getHours() - hours);
+  return d;
+}
+
 async function main() {
   console.log('Seeding database...');
 
@@ -134,20 +146,43 @@ async function main() {
   console.log('Faculty members created.');
 
   // 6. Create Students
-  const dpsStudents = [
-    { name: 'Aryan Goel', email: 'aryan@student.com', classroomId: dpsClassA.id, rollNumber: '01' },
-    { name: 'Priya Patel', email: 'priya@student.com', classroomId: dpsClassA.id, rollNumber: '02' },
-    { name: 'Rahul Sen', email: 'rahul@student.com', classroomId: dpsClassA.id, rollNumber: '03' },
-    { name: 'Sneha Rao', email: 'sneha@student.com', classroomId: dpsClassB.id, rollNumber: '04' },
-    { name: 'Amit Shah', email: 'amit@student.com', classroomId: dpsClassB.id, rollNumber: '05' },
+  // Varied student data for rich demo
+  type StudentSeed = {
+    name: string;
+    email: string;
+    classroomId: string;
+    rollNumber: string;
+    totalXP: number;
+    level: number;
+    coins: number;
+    streak: number;
+    lastActiveAt: Date;
+    detStatus: 'COMPLETED' | 'IN_PROGRESS' | 'NOT_STARTED';
+    detChapter: number;
+    detLevel: number;
+    detScore: number;
+    detXp: number;
+    simStatus: 'COMPLETED' | 'IN_PROGRESS' | 'NOT_STARTED';
+    simChapter: number;
+    simLevel: number;
+    simScore: number;
+    simXp: number;
+  };
+
+  const dpsStudents: StudentSeed[] = [
+    { name: 'Aryan Goel', email: 'aryan@student.com', classroomId: dpsClassA.id, rollNumber: '01', totalXP: 2850, level: 5, coins: 1240, streak: 12, lastActiveAt: hoursAgo(2), detStatus: 'COMPLETED', detChapter: 3, detLevel: 10, detScore: 8700, detXp: 1800, simStatus: 'IN_PROGRESS', simChapter: 2, simLevel: 4, simScore: 3200, simXp: 600 },
+    { name: 'Priya Patel', email: 'priya@student.com', classroomId: dpsClassA.id, rollNumber: '02', totalXP: 2100, level: 4, coins: 980, streak: 8, lastActiveAt: hoursAgo(6), detStatus: 'IN_PROGRESS', detChapter: 2, detLevel: 7, detScore: 4200, detXp: 900, simStatus: 'NOT_STARTED', simChapter: 1, simLevel: 1, simScore: 0, simXp: 0 },
+    { name: 'Rahul Sen', email: 'rahul@student.com', classroomId: dpsClassA.id, rollNumber: '03', totalXP: 3400, level: 6, coins: 1560, streak: 15, lastActiveAt: hoursAgo(1), detStatus: 'COMPLETED', detChapter: 3, detLevel: 10, detScore: 9200, detXp: 2000, simStatus: 'IN_PROGRESS', simChapter: 3, simLevel: 6, simScore: 5100, simXp: 1000 },
+    { name: 'Sneha Rao', email: 'sneha@student.com', classroomId: dpsClassB.id, rollNumber: '04', totalXP: 1800, level: 3, coins: 750, streak: 5, lastActiveAt: hoursAgo(24), detStatus: 'IN_PROGRESS', detChapter: 2, detLevel: 4, detScore: 2100, detXp: 450, simStatus: 'NOT_STARTED', simChapter: 1, simLevel: 1, simScore: 0, simXp: 0 },
+    { name: 'Amit Shah', email: 'amit@student.com', classroomId: dpsClassB.id, rollNumber: '05', totalXP: 650, level: 2, coins: 320, streak: 2, lastActiveAt: daysAgo(3), detStatus: 'IN_PROGRESS', detChapter: 1, detLevel: 5, detScore: 900, detXp: 200, simStatus: 'NOT_STARTED', simChapter: 1, simLevel: 1, simScore: 0, simXp: 0 },
   ];
 
-  const misStudents = [
-    { name: 'Kunal Kapoor', email: 'kunal@student.com', classroomId: misClassA.id, rollNumber: '10' },
-    { name: 'Diya Verma', email: 'diya@student.com', classroomId: misClassA.id, rollNumber: '11' },
-    { name: 'Rohan Joshi', email: 'rohan@student.com', classroomId: misClassA.id, rollNumber: '12' },
-    { name: 'Neha Nair', email: 'neha@student.com', classroomId: misClassA.id, rollNumber: '13' },
-    { name: 'Vikram Singh', email: 'vikram@student.com', classroomId: misClassA.id, rollNumber: '14' },
+  const misStudents: StudentSeed[] = [
+    { name: 'Kunal Kapoor', email: 'kunal@student.com', classroomId: misClassA.id, rollNumber: '10', totalXP: 4100, level: 7, coins: 2050, streak: 20, lastActiveAt: hoursAgo(4), detStatus: 'COMPLETED', detChapter: 3, detLevel: 10, detScore: 9500, detXp: 2100, simStatus: 'COMPLETED', simChapter: 4, simLevel: 8, simScore: 7800, simXp: 1600 },
+    { name: 'Diya Verma', email: 'diya@student.com', classroomId: misClassA.id, rollNumber: '11', totalXP: 2800, level: 5, coins: 1320, streak: 14, lastActiveAt: hoursAgo(3), detStatus: 'COMPLETED', detChapter: 3, detLevel: 10, detScore: 8100, detXp: 1750, simStatus: 'IN_PROGRESS', simChapter: 2, simLevel: 3, simScore: 2100, simXp: 400 },
+    { name: 'Rohan Joshi', email: 'rohan@student.com', classroomId: misClassA.id, rollNumber: '12', totalXP: 1500, level: 3, coins: 680, streak: 6, lastActiveAt: daysAgo(1), detStatus: 'IN_PROGRESS', detChapter: 1, detLevel: 8, detScore: 2400, detXp: 500, simStatus: 'NOT_STARTED', simChapter: 1, simLevel: 1, simScore: 0, simXp: 0 },
+    { name: 'Neha Nair', email: 'neha@student.com', classroomId: misClassA.id, rollNumber: '13', totalXP: 2200, level: 4, coins: 1050, streak: 9, lastActiveAt: hoursAgo(12), detStatus: 'COMPLETED', detChapter: 3, detLevel: 10, detScore: 7800, detXp: 1650, simStatus: 'IN_PROGRESS', simChapter: 1, simLevel: 5, simScore: 1800, simXp: 350 },
+    { name: 'Vikram Singh', email: 'vikram@student.com', classroomId: misClassA.id, rollNumber: '14', totalXP: 3200, level: 6, coins: 1480, streak: 18, lastActiveAt: hoursAgo(5), detStatus: 'COMPLETED', detChapter: 3, detLevel: 10, detScore: 8800, detXp: 1900, simStatus: 'COMPLETED', simChapter: 4, simLevel: 8, simScore: 7200, simXp: 1500 },
   ];
 
   const students: any[] = [];
@@ -168,9 +203,11 @@ async function main() {
         rollNumber: s.rollNumber,
         schoolId: s.classroomId === dpsClassA.id || s.classroomId === dpsClassB.id ? dps.id : mis.id,
         classroomId: s.classroomId,
-        totalXP: 120,
-        level: 2,
-        coins: 150,
+        totalXP: s.totalXP,
+        level: s.level,
+        coins: s.coins,
+        streak: s.streak,
+        lastActiveAt: s.lastActiveAt,
       },
     });
 
@@ -181,8 +218,11 @@ async function main() {
 
   // 7. Create Parents and link
   const parentData = [
-    { name: 'Mrs. Goel', email: 'parent.goel@parent.com', childEmail: 'aryan@student.com' },
-    { name: 'Mr. Patel', email: 'parent.patel@parent.com', childEmail: 'priya@student.com' },
+    { name: 'Mrs. Goel', email: 'parent.goel@parent.com', children: ['aryan@student.com', 'priya@student.com'] },
+    { name: 'Mr. Patel', email: 'parent.patel@parent.com', children: ['priya@student.com'] },
+    { name: 'Mrs. Sen', email: 'parent.sen@parent.com', children: ['rahul@student.com', 'sneha@student.com'] },
+    { name: 'Mr. Kapoor', email: 'parent.kapoor@parent.com', children: ['kunal@student.com', 'diya@student.com'] },
+    { name: 'Mrs. Nair', email: 'parent.nair@parent.com', children: ['neha@student.com', 'vikram@student.com'] },
   ];
 
   for (const p of parentData) {
@@ -201,18 +241,20 @@ async function main() {
       },
     });
 
-    const childUser = await prisma.user.findUnique({
-      where: { email: p.childEmail },
-      include: { student: true },
-    });
-
-    if (childUser && childUser.student) {
-      await prisma.studentParentLink.create({
-        data: {
-          studentId: childUser.student.id,
-          parentId: parent.id,
-        },
+    for (const childEmail of p.children) {
+      const childUser = await prisma.user.findUnique({
+        where: { email: childEmail },
+        include: { student: true },
       });
+
+      if (childUser && childUser.student) {
+        await prisma.studentParentLink.create({
+          data: {
+            studentId: childUser.student.id,
+            parentId: parent.id,
+          },
+        });
+      }
     }
   }
 
@@ -354,20 +396,30 @@ async function main() {
 
   console.log('Achievements seeded.');
 
-  // 12. Create GameProgress for seed students to display details on dashboard
-  for (const student of students.slice(0, 3)) {
+  // Build a name-to-seed mapping for matching
+  const seedByName = new Map<string, StudentSeed>();
+  for (const sd of [...dpsStudents, ...misStudents]) {
+    seedByName.set(sd.name, sd);
+  }
+
+  // 12. Create GameProgress for all seed students
+  for (const student of students) {
+    const s = seedByName.get(student.name)!;
+
     await prisma.gameProgress.create({
       data: {
         studentId: student.id,
         gameId: detectiveGame.id,
-        currentChapter: 2,
-        currentLevel: 3,
-        status: 'IN_PROGRESS',
-        totalScore: 1800,
-        totalXPEarned: 350,
+        currentChapter: s.detChapter,
+        currentLevel: s.detLevel,
+        status: s.detStatus,
+        totalScore: s.detScore,
+        totalXPEarned: s.detXp,
         detectiveSave: JSON.stringify({
-          scenario: 'school',
-          discoveredClues: ['canteen_queue', 'library_chaos'],
+          scenario: s.detChapter >= 2 ? 'school' : 'home',
+          discoveredClues: s.detStatus === 'COMPLETED'
+            ? ['canteen_queue', 'library_chaos', 'broken_bench', 'water_logged_path', 'traffic_jam']
+            : ['canteen_queue', 'library_chaos'],
           identifiedProblems: [
             {
               id: 'canteen_queue',
@@ -375,8 +427,15 @@ async function main() {
               description: 'Students spend their entire recess waiting in line for food, leaving no time to eat.',
               affectedPeople: 'Students at lunch recess',
               frequency: 'daily',
-              discoveredVia: ['long_queue_visual'],
-              fromScene: 'school',
+              score: 85,
+            },
+            {
+              id: 'library_chaos',
+              title: 'Disorganised Library',
+              description: 'Books are scattered everywhere, students cannot find what they need on time.',
+              affectedPeople: 'Students and staff',
+              frequency: 'daily',
+              score: 72,
             },
           ],
         }),
@@ -387,14 +446,181 @@ async function main() {
       data: {
         studentId: student.id,
         gameId: simulatorGame.id,
-        currentChapter: 1,
-        currentLevel: 1,
-        status: 'NOT_STARTED',
+        currentChapter: s.simChapter,
+        currentLevel: s.simLevel,
+        status: s.simStatus,
+        totalScore: s.simScore,
+        totalXPEarned: s.simXp,
+        simulatorSave: s.simStatus !== 'NOT_STARTED' ? JSON.stringify({
+          startupName: ['EcoBites', 'QuickCart', 'LearnHub', 'GreenClean', 'SmartStudy'][students.indexOf(student) % 5],
+          brandColor: ['#8B5CF6', '#3B82F6', '#10B981', '#F59E0B', '#EF4444'][students.indexOf(student) % 5],
+          team: [
+            { name: 'Riya', role: 'Marketing', skill: 8 },
+            { name: 'Arjun', role: 'Operations', skill: 7 },
+            { name: 'Maya', role: 'Finance', skill: 9 },
+          ],
+          revenue: 125000,
+          profit: 32000,
+          valuation: 500000,
+        }) : null,
       },
     });
   }
 
-  console.log('Seed database completed successfully.');
+  // 13. Award achievements to students
+  const allAchievements = await prisma.achievement.findMany();
+  const achievementMap = new Map(allAchievements.map(a => [a.slug, a]));
+
+  const studentAchievements = [
+    { email: 'aryan@student.com', slugs: ['first-steps', 'clue-hunter', 'problem-spotter', 'detective-pro', 'brand-born'] },
+    { email: 'priya@student.com', slugs: ['first-steps', 'clue-hunter'] },
+    { email: 'rahul@student.com', slugs: ['first-steps', 'clue-hunter', 'problem-spotter', 'detective-pro', 'brand-born', 'open-for-business', 'profitable'] },
+    { email: 'sneha@student.com', slugs: ['first-steps', 'clue-hunter'] },
+    { email: 'amit@student.com', slugs: ['first-steps'] },
+    { email: 'kunal@student.com', slugs: ['first-steps', 'clue-hunter', 'problem-spotter', 'detective-pro', 'master-detective', 'brand-born', 'open-for-business', 'profitable', 'millionaire', 'startup-master'] },
+    { email: 'diya@student.com', slugs: ['first-steps', 'clue-hunter', 'problem-spotter', 'detective-pro', 'brand-born'] },
+    { email: 'rohan@student.com', slugs: ['first-steps', 'clue-hunter'] },
+    { email: 'neha@student.com', slugs: ['first-steps', 'clue-hunter', 'problem-spotter', 'detective-pro', 'brand-born', 'open-for-business'] },
+    { email: 'vikram@student.com', slugs: ['first-steps', 'clue-hunter', 'problem-spotter', 'detective-pro', 'master-detective', 'brand-born', 'open-for-business', 'profitable', 'millionaire', 'startup-master'] },
+  ];
+
+  for (const sa of studentAchievements) {
+    const user = await prisma.user.findUnique({
+      where: { email: sa.email },
+      include: { student: true },
+    });
+    if (!user || !user.student) continue;
+
+    for (const slug of sa.slugs) {
+      const ach = achievementMap.get(slug);
+      if (!ach) continue;
+
+      await prisma.studentAchievement.create({
+        data: {
+          studentId: user.student.id,
+          achievementId: ach.id,
+          earnedAt: daysAgo(Math.floor(Math.random() * 30)),
+        },
+      });
+    }
+  }
+
+  console.log('Achievements awarded to students.');
+
+  // 14. Create Coin Transactions
+  const transactionReasons = [
+    { reason: 'Completed Level 1.1 - Getting Briefed', amount: 50 },
+    { reason: 'Completed Level 2.3 - Investigation Detail', amount: 75 },
+    { reason: 'Completed Chapter 1: Who is an Entrepreneur?', amount: 150 },
+    { reason: 'Completed Chapter 3: Finding Problems Around You', amount: 200 },
+    { reason: 'Achievement Bonus: Clue Hunter', amount: 25 },
+    { reason: 'Achievement Bonus: Problem Spotter', amount: 75 },
+    { reason: 'Achievement Bonus: Detective Pro', amount: 150 },
+    { reason: 'Daily login bonus (Day 5)', amount: 10 },
+    { reason: 'Daily login bonus (Day 10)', amount: 25 },
+    { reason: 'Quiz Score: 85% - Chapter 1 Assessment', amount: 100 },
+    { reason: 'Quiz Score: 92% - Chapter 3 Assessment', amount: 120 },
+    { reason: 'Streak milestone: 7 days', amount: 50 },
+    { reason: 'Streak milestone: 14 days', amount: 100 },
+    { reason: 'Purchased avatar accessory: Glasses', amount: -50 },
+  ];
+
+  for (const student of students) {
+    const numTransactions = 5 + Math.floor(Math.random() * 8);
+    const usedIndices = new Set<number>();
+
+    for (let i = 0; i < numTransactions; i++) {
+      let idx: number;
+      do {
+        idx = Math.floor(Math.random() * transactionReasons.length);
+      } while (usedIndices.has(idx));
+      usedIndices.add(idx);
+
+      const t = transactionReasons[idx];
+      await prisma.coinTransaction.create({
+        data: {
+          studentId: student.id,
+          amount: t.amount,
+          reason: t.reason,
+          createdAt: daysAgo(Math.floor(Math.random() * 20)),
+        },
+      });
+    }
+  }
+
+  console.log('Coin transactions created.');
+
+  // 15. Create Quiz Attempts
+  const quizTemplates = [
+    { chapterRef: 'Chapter 1', questions: JSON.stringify([
+      { question: 'What is an entrepreneur?', correct: 'Someone who starts a business' },
+      { question: 'What is a business model?', correct: 'How a company makes money' },
+    ]), maxScore: 100 },
+    { chapterRef: 'Chapter 3', questions: JSON.stringify([
+      { question: 'What makes a good problem to solve?', correct: 'It affects many people daily' },
+      { question: 'How do you identify customer needs?', correct: 'Observation and interviews' },
+    ]), maxScore: 100 },
+    { chapterRef: 'Chapter 4', questions: JSON.stringify([
+      { question: 'What is opportunity mapping?', correct: 'A way to evaluate problems' },
+      { question: 'What is market size?', correct: 'Number of potential customers' },
+    ]), maxScore: 100 },
+  ];
+
+  for (const student of students) {
+    for (const quiz of quizTemplates) {
+      const score = 60 + Math.floor(Math.random() * 40);
+      await prisma.quizAttempt.create({
+        data: {
+          studentId: student.id,
+          chapterRef: quiz.chapterRef,
+          questions: quiz.questions,
+          score,
+          maxScore: quiz.maxScore,
+          completedAt: daysAgo(Math.floor(Math.random() * 15)),
+        },
+      });
+    }
+  }
+
+  console.log('Quiz attempts created.');
+
+  // 16. Create Level Attempts for first few students
+  for (const student of students.slice(0, 5)) {
+    const detProgress = await prisma.gameProgress.findFirst({
+      where: { studentId: student.id, gameId: detectiveGame.id },
+    });
+    if (!detProgress) continue;
+
+    const levels = await prisma.level.findMany({
+      where: {
+        chapter: { gameId: detectiveGame.id },
+      },
+      orderBy: [{ chapter: { number: 'asc' } }, { number: 'asc' }],
+    });
+
+    // Simulate attempts for some levels
+    for (const level of levels.slice(0, detProgress.currentLevel)) {
+      const passed = level.number < detProgress.currentLevel || (level.number === detProgress.currentLevel && detProgress.status === 'COMPLETED');
+      const score = passed ? level.maxScore - Math.floor(Math.random() * 200) : Math.floor(Math.random() * 500);
+
+      await prisma.levelAttempt.create({
+        data: {
+          progressId: detProgress.id,
+          chapterNumber: level.chapterId === (await prisma.chapter.findFirst({ where: { gameId: detectiveGame.id, number: 1 } }))?.id ? 1 : 2,
+          levelNumber: level.number,
+          score,
+          maxScore: level.maxScore,
+          passed: passed || score >= level.passingScore,
+          timeSpent: 120 + Math.floor(Math.random() * 480),
+          completedAt: daysAgo(Math.floor(Math.random() * 20)),
+        },
+      });
+    }
+  }
+
+  console.log('Level attempts created.');
+
+  console.log('Seed database completed successfully!');
 }
 
 main()

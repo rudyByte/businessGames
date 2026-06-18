@@ -14,7 +14,8 @@ if (fs.existsSync(dbSource)) {
 
 export async function handleApi(req: any, res: any) {
   try {
-    const { app } = await import('../../apps/api/src/server.js');
+    // Import from the pre-built Express app (compiled by 'npm run build -w apps/api' in build command)
+    const { app } = await import('../../apps/api/dist/server.js');
     await app(req, res);
   } catch (error) {
     console.error('API handler error:', error);
