@@ -24,6 +24,12 @@ import OpportunityMeter from './OpportunityMeter';
 import ComboIndicator from './ComboIndicator';
 import RivalBanner from './RivalBanner';
 
+// Story / Character progression
+import ComicCutscene from '../story/ComicCutscene';
+import PreetiMessage from '../story/PreetiMessage';
+import type { PreetiMessageData } from '../story/PreetiMessage';
+import type { CutsceneData } from '../story/ComicCutscene';
+
 // Detective store
 import { useDetectiveStore } from '../../../stores/detectiveStore';
 
@@ -113,6 +119,42 @@ export default function DetectiveGamePage() {
   const [rankingsData, setRankingsData] = useState<any[] | null>(null);
   const [validationData, setValidationData] = useState<any | null>(null);
   const [showCompletion, setShowCompletion] = useState(false);
+
+  // Story beats
+  const [activeCutscene, setActiveCutscene] = useState<CutsceneData | null>(null);
+  const [preetiMessage, setPreetiMessage] = useState<PreetiMessageData | null>(null);
+
+  // ─── Story Beats ──────────────────────────────────────────────────────────
+  // Check for pending cutscenes after major progress milestones
+  const checkPendingCutscenes = useCallback(async () => {
+    try {
+      const res = await api.get('/story/pending-cutscene');
+      const cutscenes = res.data.data?.cutscenes || [];
+      if (cutscenes.length > 0) {
+        // Show the first pending cutscene
+        setActiveCutscene(cutscenes[0]);
+      }
+    } catch (err) {
+      // Silently fail — story is non-critical
+    }
+  }, []);
+
+  const handleCutsceneComplete = useCallback(async () => {
+    if (activeCutscene) {
+      try {
+        await api.post('/story/complete-cutscene', { cutsceneId: activeCutscene.id });
+      } catch (err) {
+        // Silently fail
+      }
+    }
+    setActiveCutscene(null);
+    // Check if there are more pending cutscenes
+    checkPendingCutscenes();
+  }, [activeCutscene, checkPendingCutscenes]);
+
+  const handlePreetiDismiss = useCallback(() => {
+    setPreetiMessage(null);
+  }, []);
 
   // ─── Reset Game (Dev Only) ────────────────────────────────────────────────
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -347,7 +389,10 @@ export default function DetectiveGamePage() {
     // Auto-advance to validation phase
     setPhase('validation');
     setShowValidation(true);
-  }, []);
+
+    // Check for pending cutscenes after this milestone
+    checkPendingCutscenes();
+  }, [checkPendingCutscenes]);
 
   // ─── Validation ───────────────────────────────────────────────────────────
   const handleValidationComplete = useCallback(async (valData: any) => {
@@ -360,7 +405,18 @@ export default function DetectiveGamePage() {
     }
     setPhase('report');
     setShowCompletion(true);
-  }, []);
+
+    // Check for pending cutscenes after validation complete
+    checkPendingCutscenes();
+
+    // Show Preeti message congratulating
+    setPreetiMessage({
+      id: 'detective-complete',
+      message: 'Wah Kabir! You identified real problems and validated them with actual customers! Yeh toh businessman ka pehla step hai! Mujhe pakka yakeen hai tumse kuch bada hoga! 🎉',
+      mood: 'excited',
+      xpReward: 50,
+    });
+  }, [checkPendingCutscenes]);
 
   // ─── Phase Advancement ───────────────────────────────────────────────────
   const advancePhase = useCallback(() => {
@@ -843,6 +899,23 @@ export default function DetectiveGamePage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ───── Story: Comic Cutscene ───── */}
+      {activeCutscene && (
+        <ComicCutscene
+          cutscene={activeCutscene}
+          onComplete={handleCutsceneComplete}
+        />
+      )}
+
+      {/* ───── Story: Preeti Message ───── */}
+      {preetiMessage && (
+        <PreetiMessage
+          message={preetiMessage}
+          onDismiss={handlePreetiDismiss}
+          autoDismissMs={8000}
+        />
+      )}
 
       {/* ───── Final Report ───── */}
       <AnimatePresence>

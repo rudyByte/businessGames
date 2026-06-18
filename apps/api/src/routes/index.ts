@@ -7,6 +7,7 @@ import parentsRoutes from './parents';
 import adminRoutes from './admin';
 import schoolsRoutes from './schools';
 import rivalRoutes from './rival';
+import storyRoutes from './story';
 
 const router = Router();
 
@@ -18,6 +19,7 @@ router.use('/parents', parentsRoutes);
 router.use('/admin', adminRoutes);
 router.use('/schools', schoolsRoutes);
 router.use('/rival', rivalRoutes);
+router.use('/story', storyRoutes);
 
 router.get('/health', (req, res) => {
   res.json({

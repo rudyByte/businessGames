@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../../lib/api';
 
@@ -9,7 +9,15 @@ import RoundDashboard from './RoundDashboard';
 import RoundBriefing from './RoundBriefing';
 import SharkTankEvaluation from './SharkTankEvaluation';
 
-import { ArrowLeft, Building, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Building } from 'lucide-react';
+
+// Story / Character progression
+import ComicCutscene from '../story/ComicCutscene';
+import PreetiMessage from '../story/PreetiMessage';
+import RishabhChallenge from '../story/RishabhChallenge';
+import type { PreetiMessageData } from '../story/PreetiMessage';
+import type { RishabhChallengeData } from '../story/RishabhChallenge';
+import type { CutsceneData } from '../story/ComicCutscene';
 
 export default function SimulatorGamePage() {
   const navigate = useNavigate();
@@ -17,6 +25,13 @@ export default function SimulatorGamePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showEvaluation, setShowEvaluation] = useState(false);
   const [showBriefing, setShowBriefing] = useState(false);
+
+  // Story beats
+  const [activeCutscene, setActiveCutscene] = useState<CutsceneData | null>(null);
+  const [preetiMessage, setPreetiMessage] = useState<PreetiMessageData | null>(null);
+  const [rishabhChallenge, setRishabhChallenge] = useState<RishabhChallengeData | null>(null);
+  const [hasShownMidgameBeat, setHasShownMidgameBeat] = useState(false);
+  const [hasShownFirstProfitBeat, setHasShownFirstProfitBeat] = useState(false);
 
   useEffect(() => {
     async function loadProgress() {
@@ -42,6 +57,78 @@ export default function SimulatorGamePage() {
 
   const handleRoundComplete = (updatedSave: any) => {
     setSaveState(updatedSave);
+    // Story: Check for first profit milestone
+    const roundHistory = updatedSave.roundHistory || [];
+    if (roundHistory.length > 0) {
+      const lastResult = roundHistory[roundHistory.length - 1];
+      const hasPositiveProfit = lastResult.profit > 0;
+
+      // First positive profit → Preeti celebration + Rishabh doubt
+      if (hasPositiveProfit && !hasShownFirstProfitBeat) {
+        setHasShownFirstProfitBeat(true);
+
+        // Show Preeti's cutscene (will be checked on next render)
+        // We set the cutscene data directly from predefined content
+        setActiveCutscene({
+          id: 'first_profit',
+          title: 'First Profit! 🎉',
+          xpReward: 75,
+          panels: [
+            {
+              bgEmoji: '💰',
+              character: '👩‍💼',
+              characterName: 'Preeti Didi',
+              dialogue: 'KABIR! You made your first profit! I am literally jumping up and down right now! When I made my first ₹500 in my tiffin business, I called my mom crying happy tears! 🥹',
+              emotion: '🥹',
+              location: 'Startup HQ',
+            },
+            {
+              bgEmoji: '📈',
+              character: '👩‍💼',
+              characterName: 'Preeti Didi',
+              dialogue: 'This profit means REAL customers are paying for your solution. That is the most honest feedback you can get. But remember — profit is just the beginning. Now we SCALE!',
+              emotion: '😎',
+              location: 'Business Milestone',
+            },
+            {
+              bgEmoji: '🎯',
+              character: '👩‍💼',
+              characterName: 'Preeti Didi',
+              dialogue: 'Take a moment to celebrate. Seriously. You built something people want. That feeling? That is what entrepreneurship is all about! ✨',
+              emotion: '💪',
+              location: 'Proud Moment',
+            },
+          ],
+        });
+
+        // Schedule Rishabh's challenge after the cutscene
+        setTimeout(() => {
+          setRishabhChallenge({
+            id: 'rishabh-first-profit',
+            title: 'Beginner\'s Luck?',
+            challenge: 'First profit? Okay, not bad. But anyone can get lucky once. My cousin\'s friend also made money in his first month and then his business crashed. Let\'s see if you can REPEAT it.',
+            expression: 'smug',
+            type: 'doubt',
+            context: 'You just made your first profitable week!',
+          });
+        }, 2000);
+      }
+
+      // Mid-game milestone (round 5-6)
+      if (updatedSave.currentRound >= 5 && !hasShownMidgameBeat) {
+        setHasShownMidgameBeat(true);
+        setTimeout(() => {
+          setPreetiMessage({
+            id: 'midgame-milestone',
+            message: 'Arrey, you\'re halfway through the game! This is where it gets real. In my tiffin business, the first month was easy — everyone wanted home-cooked food. But sustaining it? THAT was the challenge. 😅 Keep going!',
+            mood: 'excited',
+            xpReward: 50,
+            actionLabel: 'Keep Going!',
+          });
+        }, 1500);
+      }
+    }
+
     if (updatedSave.currentRound > 12) {
       setShowEvaluation(true);
     }
@@ -49,8 +136,77 @@ export default function SimulatorGamePage() {
 
   const handleCloseEvaluation = () => {
     setShowEvaluation(false);
-    navigate('/student');
+
+    // Show capstone resolution cutscene
+    setActiveCutscene({
+      id: 'capstone_resolution',
+      title: 'The Final Pitch',
+      xpReward: 100,
+      panels: [
+        {
+          bgEmoji: '🎯',
+          character: '👩‍💼',
+          characterName: 'Preeti Didi',
+          dialogue: 'KABIR! This is your moment! Do you remember that first day when you were just exploring the school canteen? Look how far you\'ve come! I am SO proud of you! 🥹✨',
+          emotion: '🥹',
+          location: 'Capstone Day',
+        },
+        {
+          bgEmoji: '🏆',
+          character: '👩‍💼',
+          characterName: 'Preeti Didi',
+          dialogue: 'You started as a curious kid with a dream. Today, you\'re presenting a REAL business with revenue, customers, and a team! This is what entrepreneurship looks like!',
+          emotion: '😊',
+          location: 'Journey So Far',
+        },
+        {
+          bgEmoji: '😲',
+          character: '😲',
+          characterName: 'Rishabh',
+          dialogue: 'Okay. I admit it. I was wrong. You actually... built something real. I\'ve been watching your progress and... wow. The numbers don\'t lie. You\'re a real entrepreneur.',
+          emotion: '😲',
+          location: 'Rishabh\'s Confession',
+        },
+        {
+          bgEmoji: '🎉',
+          character: '😊',
+          characterName: 'Rishabh',
+          dialogue: 'I always thought business was just about making money. But you showed me it\'s about solving problems people actually have. I... I want to learn too. Can you teach me?',
+          emotion: '😊',
+          location: 'New Beginning',
+        },
+      ],
+    });
   };
+
+  const handleCutsceneComplete = useCallback(async () => {
+    if (activeCutscene) {
+      try {
+        await api.post('/story/complete-cutscene', { cutsceneId: activeCutscene.id });
+      } catch (err) {
+        // Silently fail
+      }
+    }
+    setActiveCutscene(null);
+
+    // If capstone is done, go back to dashboard
+    if (activeCutscene?.id === 'capstone_resolution') {
+      navigate('/student');
+    }
+  }, [activeCutscene, navigate]);
+
+  const handlePreetiDismiss = useCallback(() => {
+    setPreetiMessage(null);
+  }, []);
+
+  const handleRishabhDismiss = useCallback(() => {
+    setRishabhChallenge(null);
+  }, []);
+
+  const handleRishabhAcceptChallenge = useCallback(() => {
+    setRishabhChallenge(null);
+    // The challenge is inherently accepted by continuing to play
+  }, []);
 
   if (isLoading) {
     return (
@@ -156,6 +312,32 @@ export default function SimulatorGamePage() {
           </>
         )}
       </main>
+
+      {/* Story: Comic Cutscene */}
+      {activeCutscene && (
+        <ComicCutscene
+          cutscene={activeCutscene}
+          onComplete={handleCutsceneComplete}
+        />
+      )}
+
+      {/* Story: Preeti Message */}
+      {preetiMessage && (
+        <PreetiMessage
+          message={preetiMessage}
+          onDismiss={handlePreetiDismiss}
+          autoDismissMs={10000}
+        />
+      )}
+
+      {/* Story: Rishabh Challenge */}
+      {rishabhChallenge && (
+        <RishabhChallenge
+          data={rishabhChallenge}
+          onDismiss={handleRishabhDismiss}
+          autoDismissMs={0}
+        />
+      )}
 
       {/* Capstone Shark Tank Pitch deck overlay */}
       {showEvaluation && (
