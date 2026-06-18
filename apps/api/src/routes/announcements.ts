@@ -159,7 +159,7 @@ router.post(
   requireRole(['STUDENT']),
   async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-      const { redis } = await import('../lib/redis');
+      const { redis } = await import('../lib/redis.js');
       const key = `dismissed:announcement:${req.params.id}:user:${req.user!.id}`;
       await redis.set(key, 'true', 86400); // Expire after 24h
       return res.json({ success: true, data: { dismissed: true } });
