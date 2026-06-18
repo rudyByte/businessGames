@@ -55,14 +55,16 @@ router.get('/schools', async (req: AuthenticatedRequest, res: Response, next: Ne
 // POST /api/v1/admin/schools
 router.post('/schools', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
-    const { name, city, state, boardType } = req.body;
+    const { name, city, state, boardType, curriculumVersion, subscriptionTier } = req.body;
 
     const school = await prisma.school.create({
       data: {
         name,
         city,
         state,
-        boardType: boardType || 'CBSE'
+        boardType: boardType || 'CBSE',
+        curriculumVersion: curriculumVersion || 'grade-7',
+        subscriptionTier: subscriptionTier || 'free',
       }
     });
 

@@ -99,10 +99,12 @@ router.post('/register', validateBody(registerSchema), async (req: Request, res:
       return newUser;
     });
 
-    // Generate JWT
-    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, {
-      expiresIn: JWT_EXPIRES_IN_VALUE as any,
-    });
+    // Generate JWT (schoolId comes from req.body, resolved later via schoolScope for parents)
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role, schoolId: schoolId || undefined },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN_VALUE as any }
+    );
 
     const userWithProfile = await prisma.user.findUnique({
       where: { id: user.id },
@@ -187,9 +189,16 @@ router.post('/login', validateBody(loginSchema), async (req: Request, res: Respo
       }
     }
 
-    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, {
-      expiresIn: JWT_EXPIRES_IN_VALUE as any
-    });
+    // Resolve schoolId from user profile
+    let schoolId: string | undefined;
+    if (user.student) schoolId = user.student.schoolId;
+    else if (user.faculty) schoolId = user.faculty.schoolId;
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role, schoolId },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN_VALUE as any }
+    );
 
     const { passwordHash: _, ...userSafe } = user as any;
 

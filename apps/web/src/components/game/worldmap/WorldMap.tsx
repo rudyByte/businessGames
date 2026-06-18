@@ -311,11 +311,11 @@ export default function WorldMap({
 
   // Memoize star positions so they don't regenerate on every render
   const stars = useMemo(() =>
-    Array.from({ length: 30 }, () => ({
+    Array.from({ length: 12 }, () => ({
       cx: Math.random() * 1200,
       cy: Math.random() * 300,
-      r: Math.random() * 1.5 + 0.5,
-      opacity: Math.random() * 0.5 + 0.2,
+      r: Math.random() * 1 + 0.5,
+      opacity: Math.random() * 0.3 + 0.15,
     })),
   []);
 
@@ -449,10 +449,8 @@ export default function WorldMap({
 
           {/* ─── TREES & GREENERY ────────────────────── */}
           {[
-            { x: 50, y: 400 }, { x: 130, y: 460 }, { x: 330, y: 500 },
-            { x: 460, y: 440 }, { x: 650, y: 480 }, { x: 720, y: 530 },
-            { x: 920, y: 450 }, { x: 1050, y: 500 }, { x: 1120, y: 440 },
-            { x: 380, y: 600 },
+            { x: 50, y: 400 }, { x: 330, y: 500 },
+            { x: 650, y: 480 }, { x: 1050, y: 500 },
           ].map((pos, i) => (
             <g key={i}>
               {/* Trunk */}
@@ -644,33 +642,6 @@ export default function WorldMap({
           >
             <ZoneBuilding zone={finalZones[2]} isHovered={false} onClick={() => handleZoneClick(finalZones[2])} />
           </g>
-
-          {/* ─── DECORATIVE ELEMENTS ──────────────── */}
-          {/* Lamp posts */}
-          {[
-            { x: 60, y: 410 }, { x: 250, y: 410 }, { x: 400, y: 410 },
-            { x: 580, y: 410 }, { x: 700, y: 410 }, { x: 850, y: 410 },
-          ].map((pos, i) => (
-            <g key={`lamp-${i}`}>
-              <rect x={pos.x - 1} y={pos.y + 10} width="2" height="20" fill="#4a4a5e" />
-              <circle cx={pos.x} cy={pos.y + 8} r="3" fill="#FFE66D" opacity="0.2" />
-              <circle cx={pos.x} cy={pos.y + 8} r="1.5" fill="#FFE66D" opacity="0.4" />
-            </g>
-          ))}
-
-          {/* Cars on road */}
-          {[
-            { x: 80, y: 430, color: '#FF6B35' },
-            { x: 350, y: 430, color: '#3B82F6' },
-            { x: 550, y: 430, color: '#4ECDC4' },
-          ].map((car, i) => (
-            <g key={`car-${i}`}>
-              <rect x={car.x} y={car.y} width="16" height="8" rx="2" fill={car.color} opacity="0.6" />
-              <rect x={car.x + 2} y={car.y - 2} width="10" height="4" rx="2" fill={car.color} opacity="0.5" />
-              <circle cx={car.x + 4} cy={car.y + 8} r="2" fill="#1a1a2e" />
-              <circle cx={car.x + 12} cy={car.y + 8} r="2" fill="#1a1a2e" />
-            </g>
-          ))}
 
           {/* ─── PATH CONNECTIONS ───────────────────── */}
           {/* Dotted path from World 1 to World 2 */}

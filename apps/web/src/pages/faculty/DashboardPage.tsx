@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../lib/api';
 import { Users, BookOpen, Star, AlertCircle, FileSpreadsheet, Plus, CheckCircle2 } from 'lucide-react';
+import FacultyAnnouncementComposer from '../../components/announcements/FacultyAnnouncementComposer';
 
 export default function FacultyDashboardPage() {
   const [classrooms, setClassrooms] = useState<any[]>([]);
@@ -120,6 +121,16 @@ export default function FacultyDashboardPage() {
             <h3 className="text-2xl font-bold text-white mt-1">{assignments.length}</h3>
           </div>
         </div>
+      </section>
+
+      {/* Announcement Composer */}
+      <section className="glass-panel p-6 rounded-2xl border border-slate-800">
+        <FacultyAnnouncementComposer
+          classrooms={classrooms}
+          onCreated={() => {
+            // Refresh announcements if needed
+          }}
+        />
       </section>
 
       {/* AI Learning Insights */}

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../lib/api';
-import { School, Users, ShieldAlert, Plus, MapPin, Trophy } from 'lucide-react';
+import { School, Users, ShieldAlert, Plus, MapPin, Trophy, BookOpen, Megaphone, QrCode } from 'lucide-react';
+import InviteCodeManager from '../../components/announcements/InviteCodeManager';
+import AnnouncementManager from '../../components/announcements/AnnouncementManager';
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<any>({});
@@ -12,7 +14,11 @@ export default function AdminDashboardPage() {
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [boardType, setBoardType] = useState('CBSE');
+  const [curriculumVersion, setCurriculumVersion] = useState('grade-7');
   const [isSuccess, setIsSuccess] = useState(false);
+
+  // Selected school for invite code / announcement management
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -43,6 +49,7 @@ export default function AdminDashboardPage() {
         city,
         state,
         boardType,
+        curriculumVersion,
       });
 
       setIsSuccess(true);
@@ -197,6 +204,19 @@ export default function AdminDashboardPage() {
             </div>
 
             <div>
+              <label className="block text-slate-400 font-semibold mb-1">Curriculum Version</label>
+              <select
+                className="w-full bg-slate-900/60 border border-slate-800 rounded-lg p-2 text-white text-xs outline-none focus:border-red-500/50 transition-colors"
+                value={curriculumVersion}
+                onChange={(e) => setCurriculumVersion(e.target.value)}
+              >
+                <option value="grade-7">Grade 7</option>
+                <option value="grade-8">Grade 8</option>
+                <option value="grade-9">Grade 9</option>
+              </select>
+            </div>
+
+            <div>
               <label className="block text-slate-400 font-semibold mb-1">Affiliation Board</label>
               <select
                 className="w-full bg-slate-900/60 border border-slate-800 rounded-lg p-2 text-white text-xs outline-none focus:border-red-500/50 transition-colors"
@@ -218,6 +238,75 @@ export default function AdminDashboardPage() {
           </form>
         </div>
       </div>
+
+      {/* Enterprise Management */}
+      <section className="border-t border-slate-800/40 pt-6 mt-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold font-display text-white text-sm flex items-center gap-2">
+            <span className="w-1.5 h-5 bg-red-500 rounded-full" />
+            Enterprise Management
+          </h3>
+        </div>
+
+        {/* School Selector */}
+        <div className="glass-panel p-4 rounded-xl border border-slate-800 mb-4">
+          <label className="block text-[10px] text-slate-400 font-semibold mb-2 uppercase tracking-wider">
+            Select School to Manage
+          </label>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <button
+              onClick={() => setSelectedSchoolId(null)}
+              className={`text-xs px-3 py-2 rounded-lg border transition-all ${
+                !selectedSchoolId
+                  ? 'bg-red-500/10 border-red-500/30 text-red-400'
+                  : 'border-slate-800 text-slate-400 hover:border-slate-600'
+              }`}
+            >
+              All (Global)
+            </button>
+            {schools.map((s: any) => (
+              <button
+                key={s.id}
+                onClick={() => setSelectedSchoolId(s.id)}
+                className={`text-xs px-3 py-2 rounded-lg border transition-all text-left ${
+                  selectedSchoolId === s.id
+                    ? 'bg-red-500/10 border-red-500/30 text-red-400'
+                    : 'border-slate-800 text-slate-400 hover:border-slate-600'
+                }`}
+              >
+                {s.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Announcements */}
+          <div className="glass-panel p-5 rounded-xl border border-slate-800">
+            <AnnouncementManager
+              schools={schools.map((s: any) => ({ id: s.id, name: s.name }))}
+            />
+          </div>
+
+          {/* Invite Codes */}
+          <div className="glass-panel p-5 rounded-xl border border-slate-800">
+            <h3 className="font-bold font-display text-white text-sm mb-4">Invite Management</h3>
+            {selectedSchoolId ? (
+              <InviteCodeManager
+                school={{
+                  id: selectedSchoolId,
+                  name: schools.find((s: any) => s.id === selectedSchoolId)?.name || 'Selected School',
+                }}
+              />
+            ) : (
+              <div className="text-center py-8 text-slate-500">
+                <QrCode className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                <p className="text-xs">Select a school above to manage invite codes</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

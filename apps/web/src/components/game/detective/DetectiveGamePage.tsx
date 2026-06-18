@@ -27,6 +27,7 @@ import RivalBanner from './RivalBanner';
 // Story / Character progression
 import ComicCutscene from '../story/ComicCutscene';
 import PreetiMessage from '../story/PreetiMessage';
+import ChapterCompleteScreen from '../ChapterCompleteScreen';
 import type { PreetiMessageData } from '../story/PreetiMessage';
 import type { CutsceneData } from '../story/ComicCutscene';
 
@@ -119,6 +120,7 @@ export default function DetectiveGamePage() {
   const [rankingsData, setRankingsData] = useState<any[] | null>(null);
   const [validationData, setValidationData] = useState<any | null>(null);
   const [showCompletion, setShowCompletion] = useState(false);
+  const [showChapterComplete, setShowChapterComplete] = useState(false);
 
   // Story beats
   const [activeCutscene, setActiveCutscene] = useState<CutsceneData | null>(null);
@@ -215,6 +217,7 @@ export default function DetectiveGamePage() {
 
   // Auto-save tracking
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const intervalSaveRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const npcToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -273,13 +276,36 @@ export default function DetectiveGamePage() {
     }
   }, [phase, discoveredClues, clueSources, npcInterviews, activeScene, rankingsData, validationData]);
 
-  // Auto-save when key state changes
+  // Auto-save when key state changes (debounced 2s)
   useEffect(() => {
     if (phase === 'briefing') return;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => saveProgress(), 2000);
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
   }, [phase, discoveredClues, npcInterviews, rankingsData, validationData, saveProgress]);
+
+  // Background auto-save every 60 seconds while game is active
+  useEffect(() => {
+    if (phase === 'briefing' || phase === 'report') return;
+    intervalSaveRef.current = setInterval(() => {
+      saveProgress();
+    }, 60000);
+    return () => {
+      if (intervalSaveRef.current) {
+        clearInterval(intervalSaveRef.current);
+        intervalSaveRef.current = null;
+      }
+    };
+  }, [phase, saveProgress]);
+
+  // Save before unload (tab close, navigate away)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      saveProgress();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [saveProgress]);
 
   // ─── Restore Progress ────────────────────────────────────────────────────
   useEffect(() => {
@@ -404,19 +430,27 @@ export default function DetectiveGamePage() {
       console.error('Failed to complete validation:', err);
     }
     setPhase('report');
-    setShowCompletion(true);
+    // Show chapter complete screen first, then final report + bridge
+    setShowChapterComplete(true);
 
     // Check for pending cutscenes after validation complete
     checkPendingCutscenes();
+  }, [checkPendingCutscenes]);
 
-    // Show Preeti message congratulating
+  const handleChapterCompleteContinue = useCallback(() => {
+    setShowChapterComplete(false);
+    setShowCompletion(true);
+
+    // Show Preeti message congratulating with bridge to simulator
     setPreetiMessage({
       id: 'detective-complete',
-      message: 'Wah Kabir! You identified real problems and validated them with actual customers! Yeh toh businessman ka pehla step hai! Mujhe pakka yakeen hai tumse kuch bada hoga! 🎉',
+      message: 'Wah Kabir! You identified real problems and validated them with actual customers! Yeh toh businessman ka pehla step hai! Mujhe pakka yakeen hai tumse kuch bada hoga! 🎉\n\nNow the real challenge begins — BUILD a solution! Your top-ranked problem has been saved. Head over to the Startup Galaxy to start building your business! 🚀',
       mood: 'excited',
       xpReward: 50,
+      actionLabel: 'Go to Startup Galaxy!',
+      onAction: () => { setShowCompletion(false); navigate('/student/games/simulator'); },
     });
-  }, [checkPendingCutscenes]);
+  }, [navigate]);
 
   // ─── Phase Advancement ───────────────────────────────────────────────────
   const advancePhase = useCallback(() => {
@@ -899,6 +933,20 @@ export default function DetectiveGamePage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ───── Chapter Complete Screen ───── */}
+      {showChapterComplete && (
+        <ChapterCompleteScreen
+          chapterNumber={3}
+          chapterTitle="Opportunities in Rajpur Market"
+          gameName="Problem Hunt Detective"
+          score={validationData?.score || totalFound * 200}
+          maxScore={1000}
+          xpEarned={200}
+          coinsEarned={100}
+          onContinue={handleChapterCompleteContinue}
+        />
+      )}
 
       {/* ───── Story: Comic Cutscene ───── */}
       {activeCutscene && (

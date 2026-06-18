@@ -92,7 +92,11 @@ model Parent {
   name        String
   phone       String?
   
+  // Notification settings (JSON string)
+  notificationSettings String? @default("{}")
+  
   children    StudentParentLink[]
+  notifications ParentNotification[]
   
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -126,15 +130,19 @@ model StudentParentLink {
 // ─── SCHOOLS & CLASSROOMS ────────────────────────────────────
 
 model School {
-  id          String    @id @default(cuid())
-  name        String
-  city        String
-  state       String
-  boardType   String    @default("CBSE")   // CBSE, ICSE, State Board
+  id                String    @id @default(cuid())
+  name              String
+  city              String
+  state             String
+  boardType         String    @default("CBSE")   // CBSE, ICSE, State Board
+  inviteCode        String?   @unique   // Auto-generated code for faculty/student registration
+  curriculumVersion String    @default("grade-7")  // "grade-7", "grade-8", "grade-9"
+  subscriptionTier  String    @default("free")     // "free" | "premium"
   
   students    Student[]
   faculty     Faculty[]
   classrooms  Classroom[]
+  announcements Announcement[]
   
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -367,6 +375,75 @@ model QuizAttempt {
   completedAt DateTime  @default(now())
   
   @@map("quiz_attempts")
+}
+
+// ─── ANNOUNCEMENT SYSTEM ────────────────────────────────────
+
+model Announcement {
+  id            String    @id @default(cuid())
+  
+  // NULL means global (SuperAdmin), schoolId means school-wide, classroomId means classroom
+  schoolId      String?
+  school        School?   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classroomId   String?
+  classroom     Classroom? @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  
+  createdByUserId String
+  createdByRole   String  // "SUPER_ADMIN" | "FACULTY"
+  
+  title         String
+  message       String
+  ctaLabel      String?   // Optional button label
+  ctaLink       String?   // Optional button link
+  
+  isActive      Boolean   @default(true)
+  expiresAt     DateTime?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("announcements")
+}
+
+// ─── SCHOOL INVITE CODES ────────────────────────────────────
+
+model InviteCode {
+  id            String    @id @default(cuid())
+  code          String    @unique
+  schoolId      String
+  school        School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  
+  role          String    // "FACULTY" | "STUDENT"
+  maxUses       Int       @default(50)
+  currentUses   Int       @default(0)
+  
+  expiresAt     DateTime?
+  isActive      Boolean   @default(true)
+  
+  createdAt     DateTime  @default(now())
+  
+  @@map("invite_codes")
+}
+
+// ─── PARENT NOTIFICATIONS ─────────────────────────────────
+
+model ParentNotification {
+  id          String    @id @default(cuid())
+  parentId    String
+  parent      Parent    @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  
+  type        String    // achievement_earned, chapter_complete, inactivity_alert, streak_milestone, startup_milestone
+  childId     String
+  childName   String
+  title       String
+  message     String
+  emoji       String    @default("📢")
+  read        Boolean   @default(false)
+  data        String?   // JSON payload with extra details
+  
+  createdAt   DateTime  @default(now())
+
+  @@map("parent_notifications")
 }
 
 // ─── AI & ANALYTICS ──────────────────────────────────────────

@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../lib/api';
 import {
   Heart, Star, BookOpen, Clock, Award, Landmark, Trophy, Target,
   TrendingUp, CheckCircle, Brain, Lightbulb,
-  Activity, Sparkles, Building
+  Activity, Sparkles, Building, Bell, Share2
 } from 'lucide-react';
+import NotificationFeed from '../../components/parent/NotificationFeed';
+import ShareCard from '../../components/parent/ShareCard';
 
 // ─── Rich Fallback / Dummy Data ──────────────────────────────
 
@@ -169,16 +172,51 @@ const SkillIcon = ({ name }: { name: string }) => {
 // ─── Main Component ──────────────────────────────────────────
 
 export default function ParentOverviewPage() {
+  const navigate = useNavigate();
   const [children, setChildren] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [selectedChild, setSelectedChild] = useState<string | null>(null);
+  const [showShareCard, setShowShareCard] = useState(false);
+  const [parentId, setParentId] = useState<string>('');
+
+  // Share card data (memoized, null if no startup data)
+  const shareCardData = useMemo(() => {
+    const activeChild = children.find((c) => c.id === selectedChild) || children[0];
+    const simProg = activeChild?.gameProgress?.find((g: any) => g.game?.slug === 'startup-simulator');
+    if (!activeChild || !simProg?.simulatorSave) return null;
+    const ss = typeof simProg.simulatorSave === 'string'
+      ? JSON.parse(simProg.simulatorSave)
+      : simProg.simulatorSave;
+    const isComplete = simProg.status === 'COMPLETED';
+    if (!isComplete) return null;
+    return {
+      childName: activeChild.name,
+      startupName: ss.startupName || 'My Startup',
+      schoolName: activeChild.school?.name || 'School',
+      revenue: ss.revenue || 0,
+      profit: ss.profit || 0,
+      level: activeChild.level || 1,
+      totalXP: activeChild.totalXP || 0,
+      valuation: ss.valuation,
+    };
+  }, [children, selectedChild]);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await api.get('/parent/children');
-        const data = res.data.data;
+        // Also fetch parent profile for notifications
+        const [childrenRes, meRes] = await Promise.all([
+          api.get('/parent/children'),
+          api.get('/auth/me').catch(() => ({ data: { data: {} } })),
+        ]);
+
+        const data = childrenRes.data.data;
+        const parentData = meRes.data.data || {};
+        if (parentData.parent?.id) {
+          setParentId(parentData.parent.id);
+        }
+
         if (data && data.length > 0) {
           setChildren(data);
           if (!selectedChild) setSelectedChild(data[0].id);
@@ -859,6 +897,42 @@ export default function ParentOverviewPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* ─── Notification Feed (always visible) ──────── */}
+      <section>
+        {parentId ? (
+          <NotificationFeed parentId={parentId} />
+        ) : (
+          <div className="glass-panel rounded-2xl border border-slate-800 p-6 text-center">
+            <Bell className="h-6 w-6 text-slate-600 mx-auto mb-2" />
+            <p className="text-xs text-slate-500">Notifications will appear here once linked</p>
+          </div>
+        )}
+      </section>
+
+      {/* ─── Share Card (when simulator is completed) ──── */}
+      {shareCardData && (
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-white flex items-center gap-2">
+              <Share2 className="h-4 w-4 text-purple-400" />
+              Share Your Child's Achievement
+            </span>
+            <button
+              onClick={() => setShowShareCard(!showShareCard)}
+              className="text-[10px] text-purple-400 hover:text-purple-300 font-semibold transition-colors"
+            >
+              {showShareCard ? 'Hide' : 'Generate Share Card'}
+            </button>
+          </div>
+          {showShareCard && (
+            <ShareCard
+              data={shareCardData}
+              onClose={() => setShowShareCard(false)}
+            />
+          )}
+        </section>
       )}
     </div>
   );

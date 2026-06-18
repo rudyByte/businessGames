@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weekly Digest — CampusEdge</title>
+  <style>
+    /* ─── Reset & Base ─────────────────────────────── */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+      background-color: #0f172a;
+      color: #e2e8f0;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    table { border-collapse: collapse; width: 100%; }
+    img { max-width: 100%; height: auto; display: block; }
+
+    /* ─── Container ──────────────────────────────── */
+    .email-wrapper {
+      max-width: 600px;
+      margin: 0 auto;
+      background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    /* ─── Header / Hero ──────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #059669 0%, #10b981 40%, #34d399 100%);
+      padding: 40px 32px 32px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 200px;
+      height: 200px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -40px;
+      left: -40px;
+      width: 160px;
+      height: 160px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 50%;
+    }
+    .hero-emojis {
+      font-size: 48px;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+    .hero-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-subtitle {
+      font-size: 16px;
+      color: rgba(255,255,255,0.85);
+      margin-top: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ─── Student Card ───────────────────────────── */
+    .student-card {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      margin: -20px 20px 0;
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      position: relative;
+      z-index: 2;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+    .student-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10b981, #059669);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .student-info { flex: 1; }
+    .student-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .student-level {
+      font-size: 14px;
+      color: #34d399;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* ─── Content Sections ────────────────────────── */
+    .section {
+      padding: 24px 28px;
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #10b981;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(16,185,129,0.2), transparent);
+      margin: 0 28px;
+    }
+
+    /* ─── Stat Grid ──────────────────────────────── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .stat-card {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-emoji { font-size: 24px; margin-bottom: 4px; }
+    .stat-value {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+
+    /* ─── Highlight Box ──────────────────────────── */
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(52,211,153,0.05));
+      border: 1px solid rgba(16,185,129,0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+    }
+    .highlight-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #34d399;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .highlight-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .highlight-desc {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+
+    /* ─── Rank Bar ───────────────────────────────── */
+    .rank-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(30, 41, 59, 0.6);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-top: 12px;
+    }
+    .rank-number {
+      font-size: 32px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #f59e0b, #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+    .rank-label {
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+    .rank-suffix {
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    /* ─── CTA Button ─────────────────────────────── */
+    .cta-wrapper {
+      padding: 16px 28px 32px;
+      text-align: center;
+    }
+    .cta-button {
+      display: inline-block;
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #ffffff !important;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 14px 36px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px -4px rgba(5, 150, 105, 0.4);
+      transition: all 0.2s;
+    }
+
+    /* ─── Footer ─────────────────────────────────── */
+    .footer {
+      padding: 24px 28px;
+      text-align: center;
+      border-top: 1px solid rgba(148, 163, 184, 0.1);
+    }
+    .footer-logo {
+      font-size: 18px;
+      font-weight: 800;
+      color: #475569;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .footer-text {
+      font-size: 12px;
+      color: #475569;
+      line-height: 1.8;
+    }
+    .footer-text a {
+      color: #10b981;
+      text-decoration: none;
+    }
+    .footer-social { margin-top: 12px; }
+    .footer-social a {
+      display: inline-block;
+      margin: 0 6px;
+      font-size: 20px;
+      text-decoration: none;
+    }
+
+    /* ─── Responsive ─────────────────────────────── */
+    @media only screen and (max-width: 480px) {
+      .hero { padding: 28px 20px 24px; }
+      .hero-title { font-size: 22px; }
+      .student-card { flex-direction: column; text-align: center; padding: 20px; }
+      .stat-grid { grid-template-columns: 1fr; }
+      .section { padding: 20px; }
+      .section-divider { margin: 0 20px; }
+      .cta-wrapper { padding: 12px 20px 24px; }
+    }
+
+    /* ─── XP Bar ─────────────────────────────────── */
+    .xp-bar-track {
+      width: 100%;
+      height: 8px;
+      background: rgba(30, 41, 59, 0.8);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .xp-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #34d399);
+      border-radius: 99px;
+    }
+  </style>
+</head>
+<body>
+  <table cellpadding="0" cellspacing="0" role="presentation" width="100%" style="background:#0f172a;padding:20px 0;">
+    <tr>
+      <td align="center">
+        <div class="email-wrapper">
+
+          <!-- ═══════ HERO ═══════ -->
+          <div class="hero">
+            <div class="hero-emojis">🎉</div>
+            <div class="hero-title">{{childName}} had a<br/>great week on CampusEdge!</div>
+            <div class="hero-subtitle">Your young entrepreneur is building real skills</div>
+          </div>
+
+          <!-- ═══════ STUDENT CARD ═══════ -->
+          <div class="student-card">
+            <div class="student-avatar">{{childInitial}}</div>
+            <div class="student-info">
+              <div class="student-name">{{childName}}</div>
+              <div class="student-level">
+                ⭐ Level {{level}} Entrepreneur!
+                <span style="font-weight:400;color:#94a3b8;margin-left:8px;">· {{schoolName}}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══════ THIS WEEK STATS ═══════ -->
+          <div class="section">
+            <div class="section-title">📊 This Week's Progress</div>
+            <div class="stat-grid">
+              <div class="stat-card">
+                <div class="stat-emoji">⏱️</div>
+                <div class="stat-value">{{minutesPlayed}}m</div>
+                <div class="stat-label">Minutes Played</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-emoji">📚</div>
+                <div class="stat-value">{{chaptersCompleted}}</div>
+                <div class="stat-label">Chapters Done</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-emoji">⚡</div>
+                <div class="stat-value">{{xpEarned}}</div>
+                <div class="stat-label">XP Earned This Week</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-emoji">🔥</div>
+                <div class="stat-value">{{streak}}d</div>
+                <div class="stat-label">Day Streak</div>
+              </div>
+            </div>
+
+            <!-- XP Progress Bar -->
+            <div style="margin-top:16px;">
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:#94a3b8;margin-bottom:4px;">
+                <span>Level {{level}} · {{currentXp}} XP</span>
+                <span>{{xpToNextLevel}} XP to Level {{nextLevel}}</span>
+              </div>
+              <div class="xp-bar-track">
+                <div class="xp-bar-fill" style="width:{{xpProgressPercent}}%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <!-- ═══════ HIGHLIGHT ═══════ -->
+          <div class="section">
+            <div class="section-title">🏆 Weekly Highlight</div>
+            <div class="highlight-box">
+              <div class="highlight-label">{{highlightLabel}}</div>
+              <div class="highlight-text">{{highlightTitle}}</div>
+              <div class="highlight-desc">{{highlightDescription}}</div>
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <!-- ═══════ WHAT THEY LEARNED ═══════ -->
+          <div class="section">
+            <div class="section-title">🧠 What {{childName}} Learned</div>
+            <div class="highlight-box" style="background:linear-gradient(135deg,rgba(59,130,246,0.1),rgba(99,102,241,0.05));border-color:rgba(59,130,246,0.2);">
+              <div class="highlight-label" style="color:#60a5fa;">📖 Learning Focus</div>
+              <div class="highlight-text" style="font-size:15px;">{{learningTopic}}</div>
+              <div class="highlight-desc" style="margin-top:8px;">
+                {{learningDescription}}
+              </div>
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <!-- ═══════ CLASS RANK ═══════ -->
+          <div class="section">
+            <div class="section-title">🏅 Class Standing</div>
+            <div class="rank-bar">
+              <span style="font-size:36px;line-height:1;">{{rankEmoji}}</span>
+              <div>
+                <div class="rank-number">#{{classRank}}</div>
+                <div class="rank-label">in {{className}}</div>
+                <div class="rank-suffix">{{totalStudents}} students · Top {{topPercentile}}%</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══════ CTA ═══════ -->
+          <div class="cta-wrapper">
+            <a href="{{dashboardUrl}}" class="cta-button" target="_blank">
+              👀 View {{childName}}'s Full Progress Report
+            </a>
+          </div>
+
+          <!-- ═══════ STARTUP DETAILS (optional) ═══════ -->
+          {{#startupName}}
+          <div class="section-divider"></div>
+          <div class="section" style="text-align:center;">
+            <div class="section-title" style="justify-content:center;">🚀 Startup Update</div>
+            <div style="background:linear-gradient(135deg,rgba(168,85,247,0.1),rgba(139,92,246,0.05));border:1px solid rgba(168,85,247,0.2);border-radius:12px;padding:20px;">
+              <div style="font-size:14px;color:#94a3b8;margin-bottom:8px;">{{childName}}'s startup</div>
+              <div style="font-size:24px;font-weight:800;color:#fff;margin-bottom:12px;">{{startupName}}</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center;">
+                <div style="background:rgba(30,41,59,0.6);border-radius:8px;padding:12px;">
+                  <div style="font-size:18px;font-weight:700;color:#34d399;">₹{{revenue}}</div>
+                  <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Revenue</div>
+                </div>
+                <div style="background:rgba(30,41,59,0.6);border-radius:8px;padding:12px;">
+                  <div style="font-size:18px;font-weight:700;color:#fbbf24;">₹{{profit}}</div>
+                  <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Profit</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {{/startupName}}
+
+          <!-- ═══════ FOOTER ═══════ -->
+          <div class="footer">
+            <div class="footer-logo">CAMPUSEDGE</div>
+            <div class="footer-text">
+              You're receiving this because you're a parent on CampusEdge.<br/>
+              <a href="{{unsubscribeUrl}}">Unsubscribe</a> from weekly digests · 
+              <a href="{{settingsUrl}}">Notification Settings</a>
+            </div>
+            <div class="footer-text" style="margin-top:8px;font-size:11px;color:#334155;">
+              © 2026 CampusEdge · Building India's next generation of entrepreneurs
+            </div>
+          </div>
+
+        </div>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

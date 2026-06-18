@@ -7,6 +7,7 @@ import { prisma } from './lib/prisma';
 import apiRouter from './routes';
 import { errorHandler } from './middleware/errorHandler';
 import { generalLimiter } from './middleware/rateLimiter';
+import { scheduleWeeklyDigest } from './services/weeklyDigest';
 
 dotenv.config();
 
@@ -44,3 +45,12 @@ export async function connectDatabase() {
 export async function disconnectDatabase() {
   await prisma.$disconnect();
 }
+
+// Schedule recurring jobs (lazy, only if Redis is available)
+setTimeout(() => {
+  try {
+    scheduleWeeklyDigest();
+  } catch (err) {
+    console.warn('Failed to schedule weekly digest:', err);
+  }
+}, 5000);

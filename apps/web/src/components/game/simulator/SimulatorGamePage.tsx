@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../../lib/api';
 
@@ -33,6 +33,24 @@ export default function SimulatorGamePage() {
   const [hasShownMidgameBeat, setHasShownMidgameBeat] = useState(false);
   const [hasShownFirstProfitBeat, setHasShownFirstProfitBeat] = useState(false);
 
+  // Auto-save
+  const intervalSaveRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // ─── Save Progress ────────────────────────────────────────────────────
+  const saveProgress = useCallback(async (silent = true) => {
+    if (!saveState) return;
+    try {
+      await api.post('/games/startup-simulator/progress/save', {
+        currentChapter: saveState.currentChapter || 1,
+        currentLevel: saveState.currentRound || 1,
+        status: 'IN_PROGRESS',
+        simulatorSave: saveState,
+      });
+    } catch (err) {
+      if (!silent) console.error('Save failed:', err);
+    }
+  }, [saveState]);
+
   useEffect(() => {
     async function loadProgress() {
       try {
@@ -46,6 +64,29 @@ export default function SimulatorGamePage() {
     }
     loadProgress();
   }, []);
+
+  // Background auto-save every 60 seconds
+  useEffect(() => {
+    if (!saveState || showEvaluation) return;
+    intervalSaveRef.current = setInterval(() => {
+      saveProgress();
+    }, 60000);
+    return () => {
+      if (intervalSaveRef.current) {
+        clearInterval(intervalSaveRef.current);
+        intervalSaveRef.current = null;
+      }
+    };
+  }, [saveState, showEvaluation, saveProgress]);
+
+  // Save on beforeunload
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      saveProgress();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [saveProgress]);
 
   const handleBrandComplete = (updatedSave: any) => {
     setSaveState(updatedSave);
