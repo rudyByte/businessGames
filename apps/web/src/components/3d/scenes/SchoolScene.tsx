@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useDetectiveStore } from '../../../stores/detectiveStore';
 
 interface SchoolSceneProps {
   playerPosition: [number, number, number];
@@ -6,8 +7,26 @@ interface SchoolSceneProps {
   onInteract: (clueId: string, details: any) => void;
 }
 
+/* ─── Hotspot positions for radar ──────────────── */
+export const SCHOOL_HOTSPOTS = [
+  { id: 'canteen_queue', x: -6, z: -5 },
+  { id: 'water_cooler', x: 6, z: -8 },
+  { id: 'notice_board', x: -3, z: -10 },
+  { id: 'lost_found', x: 5, z: 2 },
+  { id: 'parking_pickup', x: 0, z: 8 },
+];
+
 export default function SchoolScene({ playerPosition, discoveredClues, onInteract }: SchoolSceneProps) {
-  // Check if player is close to an object (returns true if distance < 3 units)
+  // Register hotspot positions with the detective store on mount
+  useEffect(() => {
+    useDetectiveStore.getState().setHotspotPositions(SCHOOL_HOTSPOTS);
+  }, []);
+
+  // Update radar based on player position (called via requestAnimationFrame in parent)
+  useEffect(() => {
+    useDetectiveStore.getState().updateRadar(playerPosition[0], playerPosition[2]);
+  }, [playerPosition]);
+
   const isNear = (x: number, z: number) => {
     const dx = playerPosition[0] - x;
     const dz = playerPosition[2] - z;

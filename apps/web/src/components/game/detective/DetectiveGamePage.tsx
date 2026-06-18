@@ -15,6 +15,18 @@ import CaseFile from './CaseFile';
 import NPCDialogueBox from './NPCDialogueBox';
 import ValidationLevel from './ValidationLevel';
 
+// Mechanic HUD components
+import DetectiveRadar from './DetectiveRadar';
+import RushTimer from './RushTimer';
+import WitnessChain from './WitnessChain';
+import CompareReveal from './CompareReveal';
+import OpportunityMeter from './OpportunityMeter';
+import ComboIndicator from './ComboIndicator';
+import RivalBanner from './RivalBanner';
+
+// Detective store
+import { useDetectiveStore } from '../../../stores/detectiveStore';
+
 import {
   MapPin, BookOpen, User, ArrowLeft, Trophy,
   Search, CheckCircle2, ChevronRight,
@@ -178,6 +190,25 @@ export default function DetectiveGamePage() {
   const schoolComplete = schoolFound >= SCHOOL_CLUES.length;
   const marketComplete = marketFound >= MARKET_CLUES.length;
 
+  // ─── Detective Store Integration (individual selectors for perf) ────────────
+  const startRushModeStore = useDetectiveStore(s => s.startRushMode);
+
+  // Rush mode timer — ticks every second during explore phases
+  // Uses getState() to avoid re-render race conditions
+  useEffect(() => {
+    if (!phase.includes('explore')) return;
+
+    if (!useDetectiveStore.getState().rushActive) {
+      startRushModeStore();
+    }
+
+    const interval = setInterval(() => {
+      useDetectiveStore.getState().tickRushTimer(1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [phase, startRushModeStore]);
+
   // ─── Progress Save ───────────────────────────────────────────────────────
   const saveProgress = useCallback(async (silent = true) => {
     try {
@@ -235,9 +266,10 @@ export default function DetectiveGamePage() {
 
   // ─── Clue Discovery ──────────────────────────────────────────────────────
   const handleInteractClue = useCallback((clueId: string, details: any) => {
-    setActiveClueData({ id: clueId, ...details, isNew: !sceneDiscovered.includes(clueId) });
+    const isNew = !sceneDiscovered.includes(clueId);
+    setActiveClueData({ id: clueId, ...details, isNew });
 
-    if (!sceneDiscovered.includes(clueId)) {
+    if (isNew) {
       setDiscoveredClues(prev => ({
         ...prev,
         [activeScene]: [...(prev[activeScene] || []), clueId]
@@ -247,6 +279,17 @@ export default function DetectiveGamePage() {
       setShowClueToast(true);
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
       toastTimerRef.current = setTimeout(() => setShowClueToast(false), 3000);
+
+      // Record in detective store (combo, opportunity meter, rival)
+      useDetectiveStore.getState().recordClueFound(clueId);
+
+      // Show compare reveal after finding a clue
+      useDetectiveStore.getState().showCompareReveal({
+        studentProblem: details.title || clueId,
+        realFounder: '"Nobody could find restaurant menus online" — Deepinder Goyal',
+        founderName: 'Deepinder Goyal (Zomato)',
+        rating: 'GREAT THINKING! Similar observation to a real founder!',
+      });
 
       // Award XP via API
       api.post('/games/problem-hunt/levels/1/complete', {
@@ -442,6 +485,48 @@ export default function DetectiveGamePage() {
           )}
         </GameCanvas>
       </div>
+
+      {/* ───── LEFT SIDE HUD ───── */}
+      {phase.includes('explore') && (
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-30 flex flex-col items-center gap-4">
+          {/* Mechanic 1: Radar */}
+          <div className="bg-slate-900/60 backdrop-blur-md border border-slate-700/30 rounded-2xl p-3">
+            <DetectiveRadar />
+          </div>
+
+          {/* Mechanic 3: Witness Chain Arrow */}
+          <WitnessChain />
+        </div>
+      )}
+
+      {/* ───── RIGHT SIDE HUD ───── */}
+      {phase.includes('explore') && (
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-30 flex flex-col items-center gap-4">
+          {/* Mechanic 5: Opportunity Meter */}
+          <div className="bg-slate-900/60 backdrop-blur-md border border-slate-700/30 rounded-2xl p-3">
+            <OpportunityMeter />
+          </div>
+
+          {/* Mechanic 7: Rival Detective */}
+          <div className="bg-slate-900/60 backdrop-blur-md border border-slate-700/30 rounded-2xl p-3">
+            <RivalBanner />
+          </div>
+        </div>
+      )}
+
+      {/* ───── TOP HUD EXTRAS ───── */}
+      {phase.includes('explore') && (
+        <div className="absolute top-16 right-4 z-30 flex items-center gap-2">
+          {/* Mechanic 2: Rush Timer */}
+          <RushTimer />
+        </div>
+      )}
+
+      {/* ───── COMBO INDICATOR (floating) ───── */}
+      <ComboIndicator />
+
+      {/* ───── COMPARE REVEAL (bottom) ───── */}
+      <CompareReveal />
 
       {/* ───── Clue Discovered Toast ───── */}
       <AnimatePresence>
