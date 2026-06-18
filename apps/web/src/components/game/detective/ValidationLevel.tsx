@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Star, ArrowRight, BarChart3 } from 'lucide-react';
+import { Trophy, Star, ArrowRight, BarChart3, Zap, Target } from 'lucide-react';
+import { AssessmentResult } from '../../../lib/assessmentTypes';
+import AssessmentModal from '../../ui/AssessmentModal';
 
 interface ValidationLevelProps {
   onComplete: (data: any) => void;
@@ -152,6 +154,7 @@ export default function ValidationLevel({ onComplete, discoveredClues }: Validat
   const [answers, setAnswers] = useState<Record<string, { qId: number; answerIdx: number; score: number }>>({});
   const [showResult, setShowResult] = useState(false);
   const [showGrade, setShowGrade] = useState(false);
+  const [showAssessment, setShowAssessment] = useState<string | null>(null);
 
   const maxScore = useMemo(() => STAKEHOLDERS.reduce((sum, s) => sum + s.questions.reduce((qs, q) => qs + 10, 0), 0), []);
 
@@ -306,18 +309,44 @@ export default function ValidationLevel({ onComplete, discoveredClues }: Validat
               })}
             </div>
 
-            {allComplete && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-center pt-4">
-                <motion.button
-                  onClick={() => setShowResult(true)}
-                  className="bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold py-3 px-8 rounded-xl border border-green-500/20 flex items-center gap-2 shadow-lg"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <BarChart3 className="h-4 w-4" /> View Validation Results <ArrowRight className="h-4 w-4" />
-                </motion.button>
-              </motion.div>
-            )}
+            {/* Action-based assessment trigger — replaces the old all-complete button */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center gap-3 pt-4"
+        >
+          {!allComplete && (
+            <div className="flex gap-3">
+              <motion.button
+                onClick={() => setShowAssessment('prioritize_problems')}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold text-xs border border-purple-500/20 shadow-lg flex items-center gap-2"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Target className="h-3.5 w-3.5" /> Rank Problems (Drag & Drop)
+              </motion.button>
+              <motion.button
+                onClick={() => setShowAssessment('opportunity_or_not')}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-pink-600 text-white font-bold text-xs border border-orange-500/20 shadow-lg flex items-center gap-2"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Zap className="h-3.5 w-3.5" /> Swipe: Opp or Not?
+              </motion.button>
+            </div>
+          )}
+
+          {allComplete && (
+            <motion.button
+              onClick={() => setShowResult(true)}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold py-3 px-8 rounded-xl border border-green-500/20 flex items-center gap-2 shadow-lg"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <BarChart3 className="h-4 w-4" /> View Validation Results <ArrowRight className="h-4 w-4" />
+            </motion.button>
+          )}
+        </motion.div>
           </motion.div>
         )}
 
@@ -579,6 +608,14 @@ export default function ValidationLevel({ onComplete, discoveredClues }: Validat
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ─── Assessment Modal ─────────────────── */}
+      <AssessmentModal
+        assessmentId={showAssessment as any}
+        open={!!showAssessment}
+        onComplete={() => setShowAssessment(null)}
+        onClose={() => setShowAssessment(null)}
+      />
     </div>
   );
 }

@@ -2,7 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../stores/authStore';
+import { useReward } from '../../components/ui/RewardProvider';
 import api from '../../lib/api';
+import ActiveHooksBar, { DEFAULT_HOOKS } from '../../components/gamification/ActiveHooksBar';
+import { FloatingActivityPopups, SAMPLE_ACTIVITIES } from '../../components/gamification/FOMOFeed';
+import StreakEndSession from '../../components/gamification/StreakEndSession';
 import {
   Flame,
   Coins,
@@ -63,21 +67,38 @@ function BottomNavBar({ activeTab, onTabChange, badges }: {
 }
 
 /* ─── Stats Bar (Top) ───────────────────────────── */
-function StatsBar({ streak, coins, level, xp }: {
+function StatsBar({ streak, coins, level, xp, lastXpGain }: {
   streak: number;
   coins: number;
   level: number;
   xp: number;
+  lastXpGain: number;
 }) {
+  const [animateXp, setAnimateXp] = useState(false);
+
+  // Trigger bounce whenever XP gain changes
+  useEffect(() => {
+    if (lastXpGain > 0) {
+      setAnimateXp(true);
+      const timer = setTimeout(() => setAnimateXp(false), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [lastXpGain]);
+
   return (
     <div className="absolute top-0 left-0 right-0 z-40 px-5 py-3">
       <div className="flex items-center justify-between max-w-4xl mx-auto">
-        {/* Left: Level + XP */}
+        {/* Left: Level + XP with bounce */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-game-deep/70 backdrop-blur-md border border-purple-500/15 rounded-full px-4 py-2">
+          <motion.div
+            className="flex items-center gap-2 bg-game-deep/70 backdrop-blur-md border border-purple-500/15 rounded-full px-4 py-2"
+            animate={animateXp ? { scale: [1, 1.15, 1], borderColor: ['rgba(168,85,247,0.15)', 'rgba(168,85,247,0.5)', 'rgba(168,85,247,0.15)'] } : {}}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+          >
             <Star className="h-4 w-4 text-purple-400 fill-purple-400/30" />
             <span className="text-sm font-game-round font-bold text-white">Lv.{level}</span>
-          </div>
+            <span className="text-xs text-slate-500 font-game-body">{xp} XP</span>
+          </motion.div>
         </div>
 
         {/* Center: Greeting */}
@@ -96,11 +117,11 @@ function StatsBar({ streak, coins, level, xp }: {
             <span className="text-sm font-game-round font-bold text-white">{streak}</span>
           </div>
 
-          {/* Coins */}
+          {/* Coins with bounce */}
           <motion.div
             className="flex items-center gap-1.5 bg-game-deep/70 backdrop-blur-md border border-game-yellow/15 rounded-full px-3 py-2"
-            animate={coins > 0 ? { scale: [1, 1.05, 1] } : {}}
-            transition={{ duration: 2, repeat: Infinity }}
+            animate={animateXp ? { scale: [1, 1.08, 1] } : coins > 0 ? { scale: [1, 1.05, 1] } : {}}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
           >
             <Coins className="h-4 w-4 text-game-yellow" />
             <span className="text-sm font-game-round font-bold text-game-yellow">₹{coins}</span>
@@ -122,6 +143,9 @@ export default function StudentHomePage() {
   const [activeTab, setActiveTab] = useState('map');
   const [dailyChestOpened, setDailyChestOpened] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [lastXpGain, setLastXpGain] = useState(0);
+  const [showStreakModal, setShowStreakModal] = useState(false);
+  const { triggerReward } = useReward();
 
   const student = user?.student || {
     name: 'Aryan',
@@ -130,6 +154,18 @@ export default function StudentHomePage() {
     coins: 0,
     streak: 3,
   };
+
+  // Listen for reward events to animate XP counter
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.xp && detail.xp > 0) {
+        setLastXpGain(detail.xp);
+      }
+    };
+    window.addEventListener('reward-event', handler);
+    return () => window.removeEventListener('reward-event', handler);
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
@@ -150,7 +186,14 @@ export default function StudentHomePage() {
     fetchData();
   }, []);
 
+  // Show streak warning modal on mount (with delay so map loads first)
+  useEffect(() => {
+    const timer = setTimeout(() => setShowStreakModal(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleZoneClick = (zoneId: string) => {
+    // Navigate immediately — rewards play in background
     if (zoneId === 'detective') {
       navigate('/student/games/detective');
     } else if (zoneId === 'simulator') {
@@ -158,6 +201,9 @@ export default function StudentHomePage() {
     } else if (zoneId === 'showcase') {
       // Not yet implemented
     }
+
+    // Fire reward asynchronously (won't block navigation)
+    requestAnimationFrame(() => triggerReward('zone_enter'));
   };
 
   const handleChestOpen = () => {
@@ -203,6 +249,11 @@ export default function StudentHomePage() {
 
   return (
     <div className="relative w-full h-full min-h-screen bg-game-deep overflow-hidden">
+      {/* Active Hooks Bar — always visible at top */}
+      <div className="absolute top-16 left-0 right-0 z-30 px-4 py-1">
+        <ActiveHooksBar hooks={DEFAULT_HOOKS} />
+      </div>
+
       {/* Background gradient orbs */}
       <div className="fixed top-20 -left-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-20 right-0 w-80 h-80 bg-blue-500/8 rounded-full blur-3xl pointer-events-none" />
@@ -214,6 +265,7 @@ export default function StudentHomePage() {
         coins={student.coins || 0}
         level={student.level || 1}
         xp={student.totalXP || 0}
+        lastXpGain={lastXpGain}
       />
 
       {/* World Map (full screen) */}
@@ -241,6 +293,22 @@ export default function StudentHomePage() {
           leaderboard: 0,
           profile: 0,
         }}
+      />
+
+      {/* Floating activity pop-ups (bottom right) */}
+      <FloatingActivityPopups activities={SAMPLE_ACTIVITIES} maxVisible={3} />
+
+      {/* Streak End Session Modal */}
+      <StreakEndSession
+        open={showStreakModal}
+        onClose={() => setShowStreakModal(false)}
+        onQuickChallenge={() => { setShowStreakModal(false); navigate('/student/games'); }}
+        onLeave={() => { setShowStreakModal(false); }}
+        streak={student.streak || 3}
+        xpToNextLevel={100 - (student.totalXP || 0) % 100}
+        nextLevel={(student.level || 1) + 1}
+        hasStreakShield={false}
+        streakExpiresInHours={8}
       />
 
       {/* XP Gain Toast Animation */}

@@ -46,7 +46,6 @@ body {
 
 /* ─── Glassmorphism + Neumorphism Fusion ──────────────── */
 
-/* Glass-panel with subtle raised shadow (raised neumorph) */
 .glass-panel {
   background: rgba(15, 23, 42, 0.45);
   backdrop-filter: blur(16px);
@@ -59,7 +58,6 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-/* Heavier glass with stronger neumorphic shadows */
 .glass-panel-heavy {
   background: rgba(15, 23, 42, 0.75);
   backdrop-filter: blur(20px);
@@ -72,7 +70,6 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-/* Raised neumorphic element (pops up from background) */
 .neumorph {
   background: rgba(15, 23, 42, 0.6);
   box-shadow: 
@@ -81,7 +78,6 @@ body {
   border: none;
 }
 
-/* Inset/pressed neumorphic element (sinks into background) */
 .neumorph-inset {
   background: rgba(15, 23, 42, 0.6);
   box-shadow: 
@@ -90,7 +86,6 @@ body {
   border: none;
 }
 
-/* Neumorphic button (raised by default, pressed on active) */
 .neumorph-btn {
   background: rgba(15, 23, 42, 0.7);
   box-shadow: 
@@ -110,7 +105,6 @@ body {
     inset -3px -3px 6px rgba(255, 255, 255, 0.025);
 }
 
-/* Shadow-only variant for colored neumorphic buttons (preserves role colors) */
 .neumorph-btn-shadow {
   box-shadow: 
     3px 3px 6px rgba(0, 0, 0, 0.35),
@@ -129,14 +123,14 @@ body {
     inset -3px -3px 6px rgba(255, 255, 255, 0.025);
 }
 
-/* Ambient dot pattern for backgrounds */
+/* ─── Ambient Dot Pattern ──────────────────────────── */
 .bg-ambient {
   background-image: 
     radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
-/* Glassmorphism-enhancing gradient orbs (visible enough for backdrop-blur to frost) */
+/* ─── Gradient Orbs ──────────────────────────────── */
 .bg-orb-purple {
   background: radial-gradient(ellipse at center, rgba(147, 51, 234, 0.25) 0%, transparent 70%);
 }
@@ -149,8 +143,14 @@ body {
 .bg-orb-amber {
   background: radial-gradient(ellipse at center, rgba(245, 158, 11, 0.18) 0%, transparent 70%);
 }
+.bg-orb-orange {
+  background: radial-gradient(ellipse at center, rgba(255, 107, 53, 0.2) 0%, transparent 70%);
+}
+.bg-orb-teal {
+  background: radial-gradient(ellipse at center, rgba(78, 205, 196, 0.18) 0%, transparent 70%);
+}
 
-/* Scrollbars */
+/* ─── Scrollbars ──────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -166,17 +166,33 @@ body {
   background: rgba(51, 65, 85, 0.9);
 }
 
-/* ─── Game UI Utilities ──────────────────────────── */
+/* ====================================================== */
+/* ─── GAME UI DESIGN SYSTEM ──────────────────────────── */
+/* ====================================================== */
 
-/* Game card with vibrant gaming border glow */
+/* ─── Game Background ──────────────────────────── */
+.bg-game-gradient {
+  background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%);
+}
+
+/* ─── Graph Paper Grid ──────────────────────────── */
+.bg-grid {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+}
+
+/* ─── Game Cards ──────────────────────────────── */
 .game-card {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(22, 33, 62, 0.8);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 2px solid rgba(255, 107, 53, 0.15);
   box-shadow: 
     0 4px 24px rgba(255, 107, 53, 0.08),
     0 0 40px rgba(255, 107, 53, 0.03);
+  border-radius: 16px;
   transition: all 0.3s ease;
 }
 .game-card:hover {
@@ -186,7 +202,148 @@ body {
     0 0 60px rgba(255, 107, 53, 0.05);
 }
 
-/* Game neon text glow */
+.game-card-teal {
+  border-color: rgba(78, 205, 196, 0.15);
+  box-shadow: 
+    0 4px 24px rgba(78, 205, 196, 0.08),
+    0 0 40px rgba(78, 205, 196, 0.03);
+}
+.game-card-teal:hover {
+  border-color: rgba(78, 205, 196, 0.35);
+  box-shadow: 
+    0 6px 32px rgba(78, 205, 196, 0.15),
+    0 0 60px rgba(78, 205, 196, 0.05);
+}
+
+.game-card-purple {
+  border-color: rgba(147, 51, 234, 0.15);
+  box-shadow: 
+    0 4px 24px rgba(147, 51, 234, 0.08),
+    0 0 40px rgba(147, 51, 234, 0.03);
+}
+.game-card-purple:hover {
+  border-color: rgba(147, 51, 234, 0.35);
+  box-shadow: 
+    0 6px 32px rgba(147, 51, 234, 0.15),
+    0 0 60px rgba(147, 51, 234, 0.05);
+}
+
+/* Card with left accent border */
+.game-card-accent {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 2px solid rgba(255, 255, 255, 0.06);
+  border-left: 3px solid #FF6B35;
+  border-radius: 12px;
+  box-shadow: 
+    0 2px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+.game-card-accent:hover {
+  border-left-width: 4px;
+  box-shadow: 
+    0 4px 20px rgba(255, 107, 53, 0.15);
+}
+
+/* ─── Game Buttons ──────────────────────────────── */
+.btn-game {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Primary gradient button */
+.btn-game-primary {
+  background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
+  color: white;
+  box-shadow: 
+    0 4px 14px rgba(255, 107, 53, 0.4),
+    0 0 20px rgba(255, 107, 53, 0.15);
+}
+.btn-game-primary:hover {
+  box-shadow: 
+    0 6px 20px rgba(255, 107, 53, 0.5),
+    0 0 30px rgba(255, 107, 53, 0.2);
+  transform: translateY(-1px);
+}
+.btn-game-primary:active {
+  transform: translateY(2px);
+  box-shadow: 
+    0 2px 8px rgba(255, 107, 53, 0.3);
+}
+
+/* Secondary teal button */
+.btn-game-secondary {
+  background: linear-gradient(135deg, #4ECDC4 0%, #3DBDB5 100%);
+  color: #1A1A2E;
+  box-shadow: 
+    0 4px 14px rgba(78, 205, 196, 0.3),
+    0 0 20px rgba(78, 205, 196, 0.1);
+}
+.btn-game-secondary:hover {
+  box-shadow: 
+    0 6px 20px rgba(78, 205, 196, 0.4);
+  transform: translateY(-1px);
+}
+.btn-game-secondary:active {
+  transform: translateY(2px);
+  box-shadow: 
+    0 2px 8px rgba(78, 205, 196, 0.2);
+}
+
+/* Danger hot pink button */
+.btn-game-danger {
+  background: linear-gradient(135deg, #EF476F 0%, #D9385E 100%);
+  color: white;
+  box-shadow: 
+    0 4px 14px rgba(239, 71, 111, 0.3);
+}
+.btn-game-danger:hover {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 6px 20px rgba(239, 71, 111, 0.4);
+}
+.btn-game-danger:active {
+  transform: translateY(2px);
+  box-shadow: 
+    0 2px 8px rgba(239, 71, 111, 0.2);
+}
+
+/* Neutral/ghost game button */
+.btn-game-ghost {
+  background: rgba(15, 23, 42, 0.6);
+  color: #A8B2D8;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    3px 3px 6px rgba(0, 0, 0, 0.35),
+    -3px -3px 6px rgba(255, 255, 255, 0.025);
+}
+.btn-game-ghost:hover {
+  color: white;
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    4px 4px 8px rgba(0, 0, 0, 0.4),
+    -4px -4px 8px rgba(255, 255, 255, 0.04);
+}
+.btn-game-ghost:active {
+  box-shadow: 
+    inset 3px 3px 6px rgba(0, 0, 0, 0.35),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.025);
+  transform: translateY(1px);
+}
+
+/* ─── Neon Text Glows ──────────────────────────── */
 .text-glow {
   text-shadow: 0 0 20px rgba(255, 107, 53, 0.4), 0 0 40px rgba(255, 107, 53, 0.2);
 }
@@ -196,8 +353,165 @@ body {
 .text-glow-yellow {
   text-shadow: 0 0 20px rgba(255, 230, 109, 0.4), 0 0 40px rgba(255, 230, 109, 0.2);
 }
+.text-glow-purple {
+  text-shadow: 0 0 20px rgba(147, 51, 234, 0.4), 0 0 40px rgba(147, 51, 234, 0.2);
+}
 
-/* Pulse ring animation for interactive elements */
+/* ─── Progress Bars ──────────────────────────────── */
+/* Chunky game progress bar */
+.progress-bar-game {
+  height: 20px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Gradient fill variants */
+.progress-fill-game {
+  background: linear-gradient(90deg, #4ECDC4 0%, #FFE66D 100%);
+  box-shadow: 
+    0 0 12px rgba(78, 205, 196, 0.4),
+    0 0 24px rgba(255, 230, 109, 0.15);
+}
+
+.progress-fill-purple {
+  background: linear-gradient(90deg, #7C3AED 0%, #A78BFA 100%);
+  box-shadow: 
+    0 0 12px rgba(124, 58, 237, 0.4);
+}
+
+.progress-fill-orange {
+  background: linear-gradient(90deg, #FF6B35 0%, #FF8C42 100%);
+  box-shadow: 
+    0 0 12px rgba(255, 107, 53, 0.4);
+}
+
+/* ─── Hexagonal Shield Badge ──────────────────────── */
+.hex-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 72px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  position: relative;
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: 22px;
+  color: white;
+}
+
+.hex-badge-sm {
+  width: 48px;
+  height: 54px;
+  font-size: 16px;
+}
+
+.hex-badge-lg {
+  width: 80px;
+  height: 90px;
+  font-size: 28px;
+}
+
+.hex-badge-bronze {
+  background: linear-gradient(135deg, #CD7F32 0%, #A0522D 100%);
+  box-shadow: 0 0 16px rgba(205, 127, 50, 0.4);
+}
+.hex-badge-silver {
+  background: linear-gradient(135deg, #C0C0C0 0%, #A9A9A9 100%);
+  box-shadow: 0 0 16px rgba(192, 192, 192, 0.4);
+}
+.hex-badge-gold {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+.hex-badge-platinum {
+  background: linear-gradient(135deg, #E5E4E2 0%, #B0B0B0 100%);
+  box-shadow: 0 0 20px rgba(229, 228, 226, 0.5);
+}
+.hex-badge-diamond {
+  background: linear-gradient(135deg, #B9F2FF 0%, #6DD5FA 100%);
+  box-shadow: 0 0 24px rgba(185, 242, 255, 0.5);
+}
+.hex-badge-purple {
+  background: linear-gradient(135deg, #7C3AED 0%, #A78BFA 100%);
+  box-shadow: 0 0 16px rgba(124, 58, 237, 0.4);
+}
+
+/* ─── Holographic / Foil Effect ──────────────────── */
+.holographic {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 107, 53, 0.15) 0%,
+    rgba(78, 205, 196, 0.15) 20%,
+    rgba(255, 230, 109, 0.15) 40%,
+    rgba(239, 71, 111, 0.15) 60%,
+    rgba(147, 51, 234, 0.15) 80%,
+    rgba(255, 107, 53, 0.15) 100%
+  );
+  background-size: 200% 100%;
+  animation: holographic 3s linear infinite;
+}
+
+@keyframes holographic {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* ─── Podium 3D Effect ──────────────────────────── */
+.podium {
+  perspective: 800px;
+}
+
+.podium-1st {
+  transform: translateZ(20px);
+  filter: drop-shadow(0 8px 24px rgba(255, 215, 0, 0.3));
+}
+.podium-2nd {
+  transform: translateZ(10px);
+  filter: drop-shadow(0 4px 16px rgba(192, 192, 192, 0.2));
+}
+.podium-3rd {
+  transform: translateZ(5px);
+  filter: drop-shadow(0 4px 12px rgba(205, 127, 50, 0.2));
+}
+
+/* ─── Achievement Badge Shapes ──────────────────── */
+.badge-shield {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.badge-hexagon {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+
+.badge-diamond {
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.badge-star {
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+/* ─── Animations ──────────────────────────────── */
+@keyframes float-bob {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+.animate-float {
+  animation: float-bob 3s ease-in-out infinite;
+}
+
 @keyframes pulse-ring {
   0% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.4); }
   70% { box-shadow: 0 0 0 12px rgba(255, 107, 53, 0); }
@@ -207,7 +521,6 @@ body {
   animation: pulse-ring 2s infinite;
 }
 
-/* Chest vibration/shake */
 @keyframes chest-vibrate {
   0%, 100% { transform: rotate(0deg); }
   25% { transform: rotate(-3deg); }
@@ -218,16 +531,6 @@ body {
   animation: chest-vibrate 1.5s ease-in-out infinite;
 }
 
-/* Floating bob animation */
-@keyframes float-bob {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
-}
-.animate-float {
-  animation: float-bob 3s ease-in-out infinite;
-}
-
-/* Slow drift for ghosts */
 @keyframes ghost-drift {
   0%, 100% { transform: translateX(0px) translateY(0px); }
   25% { transform: translateX(8px) translateY(-4px); }
@@ -238,7 +541,6 @@ body {
   animation: ghost-drift 6s ease-in-out infinite;
 }
 
-/* Coin bounce animation */
 @keyframes coin-bounce {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.25); }
@@ -247,7 +549,6 @@ body {
   animation: coin-bounce 2s ease-in-out infinite;
 }
 
-/* World map zone pulse */
 @keyframes zone-pulse {
   0%, 100% { opacity: 0.6; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.05); }
@@ -256,7 +557,6 @@ body {
   animation: zone-pulse 3s ease-in-out infinite;
 }
 
-/* Fog of war shimmer for locked zones */
 @keyframes fog-shimmer {
   0% { opacity: 0.3; }
   50% { opacity: 0.5; }
@@ -266,7 +566,6 @@ body {
   animation: fog-shimmer 4s ease-in-out infinite;
 }
 
-/* Slide in from bottom for chest open */
 @keyframes slideUpFade {
   from {
     opacity: 0;
@@ -281,7 +580,17 @@ body {
   animation: slideUpFade 0.5s ease-out;
 }
 
-/* Shimmer animation for Skeleton Loader */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.animate-shake {
+  animation: shake 0.3s ease-in-out;
+}
+
 @keyframes shimmer {
   100% {
     transform: translateX(100%);
@@ -307,4 +616,139 @@ body {
   );
   animation: shimmer 2.5s infinite;
   content: '';
+}
+
+/* ─── Rank Change Animations ──────────────────────── */
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-rank-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-rank-down {
+  animation: slideDown 0.4s ease-out;
+}
+
+/* ─── Title Bar Gradient ──────────────────────── */
+.header-gradient {
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.08) 0%, rgba(78, 205, 196, 0.05) 100%);
+  border-bottom: 1px solid rgba(255, 107, 53, 0.1);
+}
+
+/* ─── Student Minimum Text Size ──────────────────── */
+.student-game {
+  font-size: 16px;
+}
+.student-game p, .student-game span, .student-game div {
+  font-size: 16px;
+}
+.student-game small {
+  font-size: 13px;
+}
+.student-game .text-xs {
+  font-size: 13px;
+}
+
+/* ─── Mobile Bottom Tab Bar ──────────────────────── */
+.tab-bar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 64px;
+  background: rgba(22, 33, 62, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.tab-item-active {
+  color: #4ECDC4;
+}
+.tab-item-active .tab-icon {
+  filter: drop-shadow(0 0 6px rgba(78, 205, 196, 0.4));
+}
+.tab-item-active::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 3px;
+  background: #4ECDC4;
+  border-radius: 0 0 4px 4px;
+}
+
+.tab-item-inactive {
+  color: #475569;
+}
+.tab-item-inactive:hover {
+  color: #94A3B8;
+}
+
+/* ─── Desktop Sidebar Icon Rail ──────────────────── */
+.sidebar-rail {
+  width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 16px;
+  gap: 4px;
+  background: rgba(22, 33, 62, 0.8);
+  backdrop-filter: blur(16px);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  transition: width 0.2s ease;
+  overflow: hidden;
+}
+.sidebar-rail:hover {
+  width: 200px;
+}
+.sidebar-rail:hover .sidebar-label {
+  display: inline;
+}
+
+.sidebar-rail-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 20px;
+  color: #475569;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.sidebar-rail-item:hover {
+  color: white;
+  background: rgba(78, 205, 196, 0.08);
+}
+.sidebar-rail-item-active {
+  color: #4ECDC4;
+  background: rgba(78, 205, 196, 0.1);
+}
+
+.sidebar-label {
+  display: none;
+  font-size: 13px;
+  font-weight: 600;
 }

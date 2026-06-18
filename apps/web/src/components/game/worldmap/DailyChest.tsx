@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Gift } from 'lucide-react';
+import { useReward } from '../../ui/RewardProvider';
 
 interface DailyChestProps {
   canOpen: boolean;
@@ -11,12 +12,28 @@ export default function DailyChest({ canOpen, onOpen }: DailyChestProps) {
   const [isOpening, setIsOpening] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [reward, setReward] = useState<{ xp: number; coins: number } | null>(null);
+  const { triggerReward } = useReward();
 
   const handleOpen = () => {
     if (!canOpen || isOpening || isOpen) return;
 
     setIsOpening(true);
     onOpen();
+
+    // Trigger the reward explosion at chest position
+    if (typeof window !== 'undefined') {
+      // Get chest position on screen
+      const chestEl = document.querySelector('[data-chest]');
+      if (chestEl) {
+        const rect = chestEl.getBoundingClientRect();
+        triggerReward('chest_open', {
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+        });
+      } else {
+        triggerReward('chest_open');
+      }
+    }
 
     // Simulate reward calculation
     const xpReward = Math.floor(Math.random() * 151) + 50; // 50-200 XP
@@ -38,6 +55,7 @@ export default function DailyChest({ canOpen, onOpen }: DailyChestProps) {
     <>
       {/* Chest on the map */}
       <motion.button
+        data-chest
         onClick={handleOpen}
         disabled={!canOpen || isOpen}
         className={`relative cursor-pointer focus:outline-none ${!canOpen ? 'opacity-50' : ''}`}
