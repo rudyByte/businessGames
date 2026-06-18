@@ -129,25 +129,25 @@ body {
     inset -3px -3px 6px rgba(255, 255, 255, 0.025);
 }
 
-/* Subtle ambient dot pattern for backgrounds */
+/* Ambient dot pattern for backgrounds */
 .bg-ambient {
   background-image: 
-    radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 32px 32px;
+    radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
-/* Glassmorphism-enhancing gradient orbs */
+/* Glassmorphism-enhancing gradient orbs (visible enough for backdrop-blur to frost) */
 .bg-orb-purple {
-  background: radial-gradient(ellipse at center, rgba(147, 51, 234, 0.12) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(147, 51, 234, 0.25) 0%, transparent 70%);
 }
 .bg-orb-blue {
-  background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.10) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.22) 0%, transparent 70%);
 }
 .bg-orb-green {
-  background: radial-gradient(ellipse at center, rgba(34, 197, 94, 0.10) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(34, 197, 94, 0.22) 0%, transparent 70%);
 }
 .bg-orb-amber {
-  background: radial-gradient(ellipse at center, rgba(245, 158, 11, 0.08) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(245, 158, 11, 0.18) 0%, transparent 70%);
 }
 
 /* Scrollbars */
@@ -164,6 +164,121 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(51, 65, 85, 0.9);
+}
+
+/* ─── Game UI Utilities ──────────────────────────── */
+
+/* Game card with vibrant gaming border glow */
+.game-card {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 2px solid rgba(255, 107, 53, 0.15);
+  box-shadow: 
+    0 4px 24px rgba(255, 107, 53, 0.08),
+    0 0 40px rgba(255, 107, 53, 0.03);
+  transition: all 0.3s ease;
+}
+.game-card:hover {
+  border-color: rgba(255, 107, 53, 0.35);
+  box-shadow: 
+    0 6px 32px rgba(255, 107, 53, 0.15),
+    0 0 60px rgba(255, 107, 53, 0.05);
+}
+
+/* Game neon text glow */
+.text-glow {
+  text-shadow: 0 0 20px rgba(255, 107, 53, 0.4), 0 0 40px rgba(255, 107, 53, 0.2);
+}
+.text-glow-teal {
+  text-shadow: 0 0 20px rgba(78, 205, 196, 0.4), 0 0 40px rgba(78, 205, 196, 0.2);
+}
+.text-glow-yellow {
+  text-shadow: 0 0 20px rgba(255, 230, 109, 0.4), 0 0 40px rgba(255, 230, 109, 0.2);
+}
+
+/* Pulse ring animation for interactive elements */
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.4); }
+  70% { box-shadow: 0 0 0 12px rgba(255, 107, 53, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0); }
+}
+.animate-pulse-ring {
+  animation: pulse-ring 2s infinite;
+}
+
+/* Chest vibration/shake */
+@keyframes chest-vibrate {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+  75% { transform: rotate(-2deg); }
+}
+.animate-chest-vibrate {
+  animation: chest-vibrate 1.5s ease-in-out infinite;
+}
+
+/* Floating bob animation */
+@keyframes float-bob {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+.animate-float {
+  animation: float-bob 3s ease-in-out infinite;
+}
+
+/* Slow drift for ghosts */
+@keyframes ghost-drift {
+  0%, 100% { transform: translateX(0px) translateY(0px); }
+  25% { transform: translateX(8px) translateY(-4px); }
+  50% { transform: translateX(0px) translateY(-8px); }
+  75% { transform: translateX(-8px) translateY(-4px); }
+}
+.animate-ghost-drift {
+  animation: ghost-drift 6s ease-in-out infinite;
+}
+
+/* Coin bounce animation */
+@keyframes coin-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+}
+.animate-coin-bounce {
+  animation: coin-bounce 2s ease-in-out infinite;
+}
+
+/* World map zone pulse */
+@keyframes zone-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+.animate-zone-pulse {
+  animation: zone-pulse 3s ease-in-out infinite;
+}
+
+/* Fog of war shimmer for locked zones */
+@keyframes fog-shimmer {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.5; }
+  100% { opacity: 0.3; }
+}
+.animate-fog {
+  animation: fog-shimmer 4s ease-in-out infinite;
+}
+
+/* Slide in from bottom for chest open */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slide-up {
+  animation: slideUpFade 0.5s ease-out;
 }
 
 /* Shimmer animation for Skeleton Loader */

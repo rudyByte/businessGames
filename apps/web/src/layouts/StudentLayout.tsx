@@ -8,6 +8,8 @@ export default function StudentLayout() {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
 
+  const isHomePage = location.pathname === '/student';
+
   const menuItems = [
     { name: 'Home', path: '/student', icon: Home },
     { name: 'Games', path: '/student/games', icon: Gamepad2 },
@@ -25,8 +27,19 @@ export default function StudentLayout() {
     name: 'Student',
     level: 1,
     totalXP: 0,
-    coins: 0
+    coins: 0,
   };
+
+  // On the home page, render full-screen without sidebar/header (the HomePage has its own chrome)
+  if (isHomePage) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100">
+        <main className="h-screen overflow-hidden">
+          <Outlet />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row">
