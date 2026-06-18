@@ -146,7 +146,7 @@ export default function EventCard({ event, onChoose, onSkip }: EventCardProps) {
       initial={{ opacity: 0, scale: 0.5, rotateY: 180 }}
       animate={{ opacity: 1, scale: 1, rotateY: isFlipped ? 0 : 180 }}
       transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-      className="w-full max-w-md mx-auto perspective-1000"
+      className="w-full max-w-md mx-auto"
       style={{ perspective: '1000px' }}
     >
       <div
@@ -161,6 +161,7 @@ export default function EventCard({ event, onChoose, onSkip }: EventCardProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="p-8 text-center cursor-pointer"
+            style={{ backfaceVisibility: 'hidden' }}
             onClick={() => setIsFlipped(true)}
           >
             <motion.div
@@ -187,6 +188,7 @@ export default function EventCard({ event, onChoose, onSkip }: EventCardProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
+            style={{ backfaceVisibility: 'hidden' }}
           >
             {/* Timer bar */}
             <div className="h-1 bg-slate-800">

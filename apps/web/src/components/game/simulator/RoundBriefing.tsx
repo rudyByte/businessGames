@@ -60,7 +60,7 @@ export default function RoundBriefing({ round, startupName, onBeginRound, lastRo
 
   // Auto-advance through steps
   useEffect(() => {
-    const timers: NodeJS.Timeout[] = [];
+    const timers: ReturnType<typeof setTimeout>[] = [];
     if (step === 'mentor') {
       timers.push(setTimeout(() => setStep('news'), 4000));
     } else if (step === 'news') {

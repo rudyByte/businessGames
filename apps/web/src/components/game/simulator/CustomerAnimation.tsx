@@ -86,13 +86,8 @@ export default function CustomerAnimation({
     setCustomers(customerData);
   }, [customersServed, satisfaction, happyCount, hesitantCount, complaintCount]);
 
-  // Animate customer appearance and revenue counter
+  // Animate revenue counter tick-up
   useEffect(() => {
-    // Customer appearance timeline
-    animRef.current = setInterval(() => {
-      setCustomers(prev => prev.map(c => c)); // trigger animation by id
-    }, 500);
-
     // Revenue counter tick-up
     const revenuePerTick = Math.max(1, Math.floor(revenue / 30));
     let currentRev = 0;

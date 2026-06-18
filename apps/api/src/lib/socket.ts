@@ -1,6 +1,8 @@
 import { Server as HttpServer } from 'http';
 import { Server as SocketServer } from 'socket.io';
 import jwt from 'jsonwebtoken';
+import { prisma } from './prisma';
+import { refreshRivalXP } from '../services/rival';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'campusedge-development-secret-key-32-chars';
 
@@ -53,6 +55,36 @@ export function initSocket(server: HttpServer): SocketServer {
       console.log(`User ${user.email} joined school:${schoolId}`);
     });
 
+    // ─── Rival Events ────────────────────────────────────────────────
+    socket.on('rival:check', async () => {
+      console.log(`User ${user.email} requested rival check`);
+      try {
+        const student = await prisma.student.findUnique({ where: { userId: user.id } });
+        if (student) {
+          const result = await refreshRivalXP(student.id);
+          if (result.overtaken) {
+            socket.emit('rival:you_passed', {
+              message: '🔥 YOU JUST OVERTOOK YOUR RIVAL!',
+              newRival: result.newRival,
+            });
+          } else if (result.xpDiff && result.xpDiff < 0) {
+            socket.emit('rival:passed_you', {
+              message: `⚡ Your rival is ${Math.abs(result.xpDiff)} XP ahead!`,
+              xpGap: Math.abs(result.xpDiff),
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Rival check error:', err);
+      }
+    });
+
+    // ─── Class War Events ────────────────────────────────────────────
+    socket.on('class_war:join', (classroomId: string) => {
+      socket.join(`class_war:${classroomId}`);
+      console.log(`User ${user.email} joined class_war:${classroomId}`);
+    });
+
     socket.on('disconnect', () => {
       console.log(`Socket disconnected: User ${user.email}`);
     });
@@ -77,6 +109,12 @@ export function emitToUser(userId: string, event: string, data: any) {
 export function emitToClassroom(classroomId: string, event: string, data: any) {
   if (io) {
     io.to(`classroom:${classroomId}`).emit(event, data);
+  }
+}
+
+export function emitToClassWar(classroomId: string, event: string, data: any) {
+  if (io) {
+    io.to(`class_war:${classroomId}`).emit(event, data);
   }
 }
 

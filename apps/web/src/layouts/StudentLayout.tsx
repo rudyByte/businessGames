@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import RivalWidget from '../components/gamification/RivalWidget';
 import {
   Home, Gamepad2, Trophy, BarChart3, User, LogOut, Coins, Star,
   Shield, Sparkles,
@@ -137,6 +138,9 @@ export default function StudentLayout() {
             <Outlet />
           </div>
         </main>
+
+        {/* Rival Widget - bottom-left on all non-home pages */}
+        <RivalWidget />
       </div>
 
       {/* ─── Bottom Navigation - Mobile ─── */}

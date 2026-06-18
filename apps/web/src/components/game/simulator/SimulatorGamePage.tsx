@@ -6,6 +6,7 @@ import api from '../../../lib/api';
 import BrandBuilder from './BrandBuilder';
 import TeamBuilder from './TeamBuilder';
 import RoundDashboard from './RoundDashboard';
+import RoundBriefing from './RoundBriefing';
 import SharkTankEvaluation from './SharkTankEvaluation';
 
 import { ArrowLeft, Building, HelpCircle } from 'lucide-react';
@@ -15,6 +16,7 @@ export default function SimulatorGamePage() {
   const [saveState, setSaveState] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showEvaluation, setShowEvaluation] = useState(false);
+  const [showBriefing, setShowBriefing] = useState(false);
 
   useEffect(() => {
     async function loadProgress() {
@@ -78,6 +80,24 @@ export default function SimulatorGamePage() {
 
   const currentPhase = activeSave.currentPhase || 'brand';
 
+  // Track current round to trigger briefing on each round change
+  const prevRoundRef = React.useRef<number | null>(null);
+
+  const handleBeginRound = () => {
+    setShowBriefing(false);
+  };
+
+  // Show briefing when entering gameplay phase OR when round changes
+  React.useEffect(() => {
+    if (currentPhase === 'launch' || currentPhase === 'scale' || currentPhase === 'showcase') {
+      const currentRound = activeSave.currentRound || 1;
+      if (prevRoundRef.current === null || prevRoundRef.current !== currentRound) {
+        prevRoundRef.current = currentRound;
+        setShowBriefing(true);
+      }
+    }
+  }, [currentPhase, activeSave.currentRound]);
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col overflow-x-hidden font-sans">
       
@@ -117,7 +137,23 @@ export default function SimulatorGamePage() {
         )}
 
         {(currentPhase === 'launch' || currentPhase === 'scale' || currentPhase === 'showcase') && (
-          <RoundDashboard saveState={activeSave} onRoundComplete={handleRoundComplete} />
+          <>
+            {showBriefing && (
+              <RoundBriefing
+                round={activeSave.currentRound || 1}
+                startupName={activeSave.startupName || 'Samosa Stall'}
+                onBeginRound={handleBeginRound}
+                lastRoundProfit={
+                  activeSave.roundHistory && activeSave.roundHistory.length > 0
+                    ? activeSave.roundHistory[activeSave.roundHistory.length - 1].profit
+                    : undefined
+                }
+              />
+            )}
+            {!showBriefing && (
+              <RoundDashboard saveState={activeSave} onRoundComplete={handleRoundComplete} />
+            )}
+          </>
         )}
       </main>
 
