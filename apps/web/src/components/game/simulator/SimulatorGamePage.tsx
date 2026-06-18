@@ -249,16 +249,10 @@ export default function SimulatorGamePage() {
     // The challenge is inherently accepted by continuing to play
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-950">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
-      </div>
-    );
-  }
+  // ─── Hoisted hooks (must be before early return to avoid React hooks violation) ──
+  const prevRoundRef = React.useRef<number | null>(null);
 
-  // Fallback saveState initialization
-  const activeSave = saveState || {
+  const effectiveSave = saveState || {
     cash: 50000,
     currentRound: 1,
     brandStrength: 0,
@@ -275,25 +269,29 @@ export default function SimulatorGamePage() {
     currentPhase: 'brand'
   };
 
-  const currentPhase = activeSave.currentPhase || 'brand';
+  const currentPhase = effectiveSave.currentPhase || 'brand';
 
-  // Track current round to trigger briefing on each round change
-  const prevRoundRef = React.useRef<number | null>(null);
-
-  const handleBeginRound = () => {
-    setShowBriefing(false);
-  };
-
-  // Show briefing when entering gameplay phase OR when round changes
   React.useEffect(() => {
     if (currentPhase === 'launch' || currentPhase === 'scale' || currentPhase === 'showcase') {
-      const currentRound = activeSave.currentRound || 1;
+      const currentRound = effectiveSave.currentRound || 1;
       if (prevRoundRef.current === null || prevRoundRef.current !== currentRound) {
         prevRoundRef.current = currentRound;
         setShowBriefing(true);
       }
     }
-  }, [currentPhase, activeSave.currentRound]);
+  }, [currentPhase, effectiveSave.currentRound]);
+
+  const handleBeginRound = () => {
+    setShowBriefing(false);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-950">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col overflow-x-hidden font-sans">
@@ -316,9 +314,9 @@ export default function SimulatorGamePage() {
           </span>
         </div>
 
-        {activeSave.startupName && (
+        {effectiveSave.startupName && (
           <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full font-bold text-xs uppercase tracking-wide">
-            <span>{activeSave.startupName}</span>
+            <span>{effectiveSave.startupName}</span>
           </div>
         )}
       </header>
@@ -337,18 +335,18 @@ export default function SimulatorGamePage() {
           <>
             {showBriefing && (
               <RoundBriefing
-                round={activeSave.currentRound || 1}
-                startupName={activeSave.startupName || 'Samosa Stall'}
+                round={effectiveSave.currentRound || 1}
+                startupName={effectiveSave.startupName || 'Samosa Stall'}
                 onBeginRound={handleBeginRound}
                 lastRoundProfit={
-                  activeSave.roundHistory && activeSave.roundHistory.length > 0
-                    ? activeSave.roundHistory[activeSave.roundHistory.length - 1].profit
+                  effectiveSave.roundHistory && effectiveSave.roundHistory.length > 0
+                    ? effectiveSave.roundHistory[effectiveSave.roundHistory.length - 1].profit
                     : undefined
                 }
               />
             )}
             {!showBriefing && (
-              <RoundDashboard saveState={activeSave} onRoundComplete={handleRoundComplete} />
+              <RoundDashboard saveState={effectiveSave} onRoundComplete={handleRoundComplete} />
             )}
           </>
         )}
@@ -382,7 +380,7 @@ export default function SimulatorGamePage() {
 
       {/* Capstone Shark Tank Pitch deck overlay */}
       {showEvaluation && (
-        <SharkTankEvaluation saveState={activeSave} onClose={handleCloseEvaluation} />
+        <SharkTankEvaluation saveState={effectiveSave} onClose={handleCloseEvaluation} />
       )}
     </div>
   );
