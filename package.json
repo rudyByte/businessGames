@@ -11,6 +11,7 @@
     "dev": "npm run dev --workspaces --parallel",
     "build": "npm run build --workspaces --parallel",
     "start": "npm run start -w apps/api",
+    "start:all": "node start.js",
     "prisma:generate": "npm run prisma:generate -w apps/api",
     "prisma:migrate": "npm run prisma:migrate -w apps/api",
     "prisma:seed": "npm run prisma:seed -w apps/api"

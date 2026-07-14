@@ -1,127 +1,97 @@
+// apps/web/tailwind.config.js
 /** @type {import('tailwindcss').Config} */
-export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  darkMode: 'class',
+module.exports = {
+  content: ['./src/**/*.{ts,tsx,js,jsx}', './index.html'],
   theme: {
     extend: {
       colors: {
-        // Shadcn HSL color variables
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+        orange: {
+          DEFAULT: '#FF6B35',
+          light: '#FF8C42',
+          dark: '#E55A2B',
         },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+        teal: {
+          DEFAULT: '#4ECDC4',
+          light: '#7EDDD6',
         },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+        gold: {
+          DEFAULT: '#FFE66D',
+          dark: '#F5D020',
         },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-
-        // Primary "Desi Neon" palette
-        'game-orange': '#FF6B35',
-        'game-orange-dark': '#E55A2B',
-        'game-teal': '#4ECDC4',
-        'game-teal-dark': '#3DBDB5',
-        'game-yellow': '#FFE66D',
-        'game-success': '#06D6A0',
-        'game-success-dark': '#05B88A',
-        'game-danger': '#EF476F',
-        'game-danger-dark': '#D9385E',
-        'game-mint': '#95E1D3',
-        'game-hot': '#FF3366',
-        'game-deep': '#1A1A2E',
-        'game-dark': '#16213E',
-        'game-night': '#0F3460',
-        'game-glow': '#E94560',
-
-        // Text colors
-        'game-text': '#FFFFFF',
-        'game-text-muted': '#A8B2D8',
-
-        // Rarity colors
-        'rarity-bronze': '#CD7F32',
-        'rarity-silver': '#C0C0C0',
-        'rarity-gold': '#FFD700',
-        'rarity-platinum': '#E5E4E2',
-        'rarity-diamond': '#B9F2FF',
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        'bg-deep': '#0D0D1A',
+        'bg-dark': '#1A1A2E',
+        'bg-card': '#16213E',
+        'bg-card-hover': '#1E2A4A',
+        success: '#06D6A0',
+        danger: '#EF476F',
       },
       fontFamily: {
-        sans: ["Space Grotesk", "Inter", "sans-serif"],
-        display: ["Plus Jakarta Sans", "Outfit", "sans-serif"],
-        game: ["Bangers", "cursive"],
-        'game-round': ["'Fredoka One'", "Nunito", "sans-serif"],
-        'game-body': ["Nunito", "sans-serif"],
-        'game-score': ["Orbitron", "monospace"],
-      },
-      backgroundImage: {
-        'gradient-game': 'linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%)',
-        'gradient-game-secondary': 'linear-gradient(135deg, #4ECDC4 0%, #3DBDB5 100%)',
-        'gradient-game-danger': 'linear-gradient(135deg, #EF476F 0%, #D9385E 100%)',
-        'gradient-game-card': 'linear-gradient(135deg, #16213E 0%, #1A1A2E 100%)',
-        'gradient-game-glow': 'linear-gradient(135deg, #FF6B35 0%, #4ECDC4 100%)',
+        game: ['Fredoka One', 'cursive'],
+        body: ['Nunito', 'sans-serif'],
+        score: ['Orbitron', 'monospace'],
       },
       boxShadow: {
-        'game-glow': '0 0 20px rgba(255, 107, 53, 0.3), 0 0 40px rgba(255, 107, 53, 0.1)',
-        'game-glow-teal': '0 0 20px rgba(78, 205, 196, 0.3), 0 0 40px rgba(78, 205, 196, 0.1)',
-        'game-glow-yellow': '0 0 20px rgba(255, 230, 109, 0.3), 0 0 40px rgba(255, 230, 109, 0.1)',
-        'game-glow-purple': '0 0 20px rgba(147, 51, 234, 0.3), 0 0 40px rgba(147, 51, 234, 0.1)',
-        'game-btn': '0 4px 14px rgba(255, 107, 53, 0.35)',
-        'game-btn-pressed': '0 2px 4px rgba(255, 107, 53, 0.2)',
-        'game-card-glow': '0 4px 24px rgba(255, 107, 53, 0.08), 0 0 40px rgba(255, 107, 53, 0.03)',
+        orange: '0 0 20px rgba(255, 107, 53, 0.4)',
+        teal: '0 0 20px rgba(78, 205, 196, 0.4)',
+        gold: '0 0 20px rgba(255, 230, 109, 0.4)',
+        'card': '0 8px 32px rgba(0, 0, 0, 0.4)',
+        'button': '0 4px 15px rgba(255, 107, 53, 0.3)',
+        'glow-teal': '0 0 40px rgba(78, 205, 196, 0.6)',
       },
       animation: {
-        'float': 'float-bob 3s ease-in-out infinite',
-        'pulse-ring': 'pulse-ring 2s infinite',
-        'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
-        'holographic': 'holographic 3s linear infinite',
-        'slide-up-fade': 'slideUpFade 0.5s ease-out',
-        'scale-in': 'scaleIn 0.3s ease-out',
-        'shimmer': 'shimmer 2.5s infinite',
+        'float': 'float 3s ease-in-out infinite',
+        'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+        'bounce-in': 'bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        'slide-up': 'slideUp 0.4s ease-out forwards',
+        'slide-down': 'slideDown 0.4s ease-out forwards',
+        'shine': 'shineSwipe 0.5s ease forwards',
+        'flame': 'flamePulse 0.5s ease-in-out infinite',
+        'count-up': 'countUp 0.3s ease-out',
       },
       keyframes: {
-        'glow-pulse': {
-          '0%, 100%': { boxShadow: '0 0 10px rgba(255,107,53,0.3)' },
-          '50%': { boxShadow: '0 0 25px rgba(255,107,53,0.6)' },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-8px)' },
         },
-        'holographic': {
-          '0%': { backgroundPosition: '0% 50%' },
-          '100%': { backgroundPosition: '200% 50%' },
+        pulseGlow: {
+          '0%, 100%': { boxShadow: '0 0 10px rgba(78,205,196,0.4)' },
+          '50%': { boxShadow: '0 0 30px rgba(78,205,196,0.9)' },
         },
-        'scaleIn': {
-          '0%': { transform: 'scale(0.8)', opacity: '0' },
+        bounceIn: {
+          '0%': { transform: 'scale(0.3)', opacity: '0' },
+          '50%': { transform: 'scale(1.05)' },
           '100%': { transform: 'scale(1)', opacity: '1' },
         },
+        slideUp: {
+          '0%': { transform: 'translateY(24px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        slideDown: {
+          '0%': { transform: 'translateY(-24px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        shineSwipe: {
+          '0%': { left: '-75%' },
+          '100%': { left: '125%' },
+        },
+        flamePulse: {
+          '0%, 100%': { transform: 'scaleY(1) skewX(0deg)' },
+          '25%': { transform: 'scaleY(1.1) skewX(-3deg)' },
+          '75%': { transform: 'scaleY(0.95) skewX(3deg)' },
+        },
+        countUp: {
+          '0%': { transform: 'translateY(6px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+      },
+      backgroundImage: {
+        'gradient-orange': 'linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%)',
+        'gradient-teal': 'linear-gradient(135deg, #4ECDC4 0%, #7EDDD6 100%)',
+        'gradient-gold': 'linear-gradient(135deg, #FFE66D 0%, #F5D020 100%)',
+        'gradient-card': 'linear-gradient(145deg, #16213E 0%, #0F1729 100%)',
+        'gradient-hero': 'linear-gradient(180deg, #0D0D1A 0%, #1A1A2E 50%, #0D1B3E 100%)',
+        'gradient-xp': 'linear-gradient(90deg, #4ECDC4 0%, #FFE66D 100%)',
+        'gradient-legendary': 'linear-gradient(135deg, #F59E0B, #EF4444, #8B5CF6)',
       },
     },
   },

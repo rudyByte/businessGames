@@ -5,6 +5,8 @@ import { prisma } from '../lib/prisma';
 import { registerSchema, loginSchema } from '@campusedge/shared';
 import { validateBody } from '../middleware/validate';
 import { authMiddleware, AuthenticatedRequest } from '../middleware/auth';
+import { updateLoginStreak } from '../services/gamification';
+
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'campusedge-development-secret-key-32-chars';
@@ -177,15 +179,12 @@ router.post('/login', validateBody(loginSchema), async (req: Request, res: Respo
       });
     }
 
-    // Update student activity date if student logs in
+    // Update student login streak (awards bonus XP for consecutive days)
     if (user.student) {
       try {
-        await prisma.student.update({
-          where: { id: user.student.id },
-          data: { lastActiveAt: new Date() }
-        });
-      } catch (activeErr) {
-        console.warn('Failed to update student activity:', activeErr);
+        await updateLoginStreak(user.student.id);
+      } catch (streakErr) {
+        console.warn('Failed to update login streak:', streakErr);
       }
     }
 

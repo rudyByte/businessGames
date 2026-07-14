@@ -76,6 +76,36 @@ class MockRedis {
     return slice.map(([m]) => m);
   }
 
+  async zscore(key: string, member: string): Promise<string | null> {
+    const listKey = `zset:${key}`;
+    const raw = await this.get(listKey);
+    if (!raw) return null;
+    const data: { [member: string]: number } = JSON.parse(raw);
+    return member in data ? data[member].toString() : null;
+  }
+
+  async zcard(key: string): Promise<number> {
+    const listKey = `zset:${key}`;
+    const raw = await this.get(listKey);
+    if (!raw) return 0;
+    return Object.keys(JSON.parse(raw)).length;
+  }
+
+  async expire(key: string, seconds: number): Promise<number> {
+    if (this.store.has(key) || this.store.has(`zset:${key}`)) {
+      const target = this.store.has(key) ? key : `zset:${key}`;
+      this.ttls.set(target, Date.now() + seconds * 1000);
+      return 1;
+    }
+    return 0;
+  }
+
+  async setex(key: string, seconds: number, value: string): Promise<'OK'> {
+    this.store.set(key, value);
+    this.ttls.set(key, Date.now() + seconds * 1000);
+    return 'OK';
+  }
+
   private checkExpired(key: string) {
     const expiry = this.ttls.get(key);
     if (expiry && expiry < Date.now()) {
@@ -136,6 +166,22 @@ export const redis = {
       return redisClient.zrevrange(key, start, stop);
     }
     return Promise.resolve([]);
-  }
+  },
+  zscore: (key: string, member: string) => {
+    if ('zscore' in redisClient) return redisClient.zscore(key, member);
+    return Promise.resolve(null);
+  },
+  zcard: (key: string) => {
+    if ('zcard' in redisClient) return (redisClient as any).zcard(key);
+    return Promise.resolve(0);
+  },
+  expire: (key: string, seconds: number) => {
+    if ('expire' in redisClient) return (redisClient as any).expire(key, seconds);
+    return Promise.resolve(1);
+  },
+  setex: (key: string, seconds: number, value: string) => {
+    if ('setex' in redisClient) return (redisClient as any).setex(key, seconds, value);
+    return (redisClient as MockRedis).setex(key, seconds, value);
+  },
 };
 export default redis;

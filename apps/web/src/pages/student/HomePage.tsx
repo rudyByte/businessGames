@@ -1,377 +1,345 @@
-import React, { useEffect, useState, useCallback } from 'react';
+// apps/web/src/pages/student/HomePage.tsx
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import Phaser from 'phaser';
+import { PhaserGame, PhaserGameRef } from '../../phaser/PhaserGame';
+import { WorldMapScene } from '../../phaser/scenes/WorldMapScene';
+import { EventBridge, PHASER_EVENTS, REACT_EVENTS } from '../../phaser/EventBridge';
 import { useAuthStore } from '../../stores/authStore';
-import { useReward } from '../../components/ui/RewardProvider';
 import api from '../../lib/api';
-import WorldMap from '../../components/game/worldmap/WorldMap';
-import {
-  Flame,
-  Coins,
-  Star,
-  Zap,
-  Gamepad2,
-  BarChart3,
-  User,
-  Sparkles,
-  Gift,
-} from 'lucide-react';
 
-/* ─── Minimal HUD — top bar ─────────────────── */
-function HubHud({ streak, coins, level, xp }: {
-  streak: number;
-  coins: number;
-  level: number;
-  xp: number;
-}) {
+// Overlay tab types
+type Tab = 'challenges' | 'leaderboard' | 'inventory' | 'profile' | null;
+
+// Lightweight XP popup that floats up
+function XPPopup({ amount, onDone }: { amount: number; onDone: () => void }) {
   return (
-    <div className="absolute top-0 left-0 right-0 z-30">
-      <div className="flex items-center justify-between px-5 py-3">
-        {/* Left: Level badge */}
-        <div className="flex items-center gap-2 bg-game-deep/60 backdrop-blur-md border border-purple-500/20 rounded-full px-3.5 py-1.5 shadow-lg shadow-black/20">
-          <Star className="h-3.5 w-3.5 text-purple-400 fill-purple-400/30" />
-          <span className="text-xs font-game-round font-bold text-white">Lv.{level}</span>
-          <span className="text-[10px] text-slate-500 font-game-body">{xp} XP</span>
-        </div>
-
-        {/* Center: subtle branding */}
-        <div className="hidden sm:flex items-center gap-2 bg-game-deep/40 backdrop-blur-sm border border-slate-700/20 rounded-full px-4 py-1.5">
-          <Sparkles className="h-3 w-3 text-game-yellow" />
-          <span className="text-[11px] font-game-body font-bold text-white/70">Launchpad</span>
-        </div>
-
-        {/* Right: Streak + Coins */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-game-deep/60 backdrop-blur-md border border-orange-500/20 rounded-full px-3 py-1.5 shadow-lg shadow-black/20">
-            <Flame className={`h-3.5 w-3.5 ${streak > 0 ? 'text-orange-400' : 'text-slate-600'}`} />
-            <span className="text-xs font-game-round font-bold text-white">{streak}</span>
-          </div>
-          <div className="flex items-center gap-1 bg-game-deep/60 backdrop-blur-md border border-game-yellow/20 rounded-full px-3 py-1.5 shadow-lg shadow-black/20">
-            <Coins className="h-3.5 w-3.5 text-game-yellow" />
-            <span className="text-xs font-game-round font-bold text-game-yellow">₹{coins}</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    <motion.div
+      className="fixed top-1/2 left-1/2 z-50 pointer-events-none select-none"
+      style={{ fontFamily: "'Fredoka One', cursive", fontSize: '2rem', color: '#4ECDC4', textShadow: '0 0 20px rgba(78,205,196,0.8)' }}
+      initial={{ opacity: 1, y: 0, x: '-50%', scale: 0.7 }}
+      animate={{ opacity: 0, y: -120, scale: 1.3 }}
+      transition={{ duration: 1.4, ease: 'easeOut' }}
+      onAnimationComplete={onDone}
+    >
+      +{amount} XP ✨
+    </motion.div>
   );
 }
 
-/* ─── Floating Quick Actions — tap to expand ── */
-function QuickActions({ onAction }: { onAction: (action: string) => void }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [timeOfDay] = useState<'morning' | 'afternoon' | 'evening'>(
-    (() => {
-      const h = new Date().getHours();
-      if (h < 12) return 'morning';
-      if (h < 17) return 'afternoon';
-      return 'evening';
-    })()
-  );
-
-  // Close on escape or click outside
-  useEffect(() => {
-    if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsOpen(false);
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [isOpen]);
-
-  const actions = [
-    { id: 'detective', label: 'Problem Hunt', emoji: '🔍', desc: 'Find business opportunities' },
-    { id: 'simulator', label: 'Startup Galaxy', emoji: '🚀', desc: 'Build your business' },
-    { id: 'challenges', label: 'Daily Challenges', emoji: '⚡', desc: 'Bonus XP available' },
-    { id: 'leaderboard', label: 'Leaderboard', emoji: '🏆', desc: 'See how you rank' },
-  ];
-
-  const greetings = {
-    morning: { text: 'Good morning! ☀️', sub: 'Ready to build something?' },
-    afternoon: { text: 'Hey there! 👋', sub: 'Time to level up!' },
-    evening: { text: 'Let\'s go! 🚀', sub: 'One more challenge?' },
-  };
-
+// Level up celebration modal
+function LevelUpModal({ level, onClose }: { level: number; onClose: () => void }) {
   return (
-    <div className="absolute bottom-20 right-4 z-30 flex flex-col items-end gap-2">
-      {/* Expanded panel */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 16, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.9 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className="w-64 bg-game-deep/90 backdrop-blur-xl border border-slate-700/40 rounded-2xl p-3 shadow-2xl"
-          >
-            {/* Greeting */}
-            <div className="px-2 pb-2 mb-2 border-b border-slate-700/30">
-              <p className="text-sm font-game-round font-bold text-white">{greetings[timeOfDay].text}</p>
-              <p className="text-[10px] text-slate-500">{greetings[timeOfDay].sub}</p>
-            </div>
-
-            {/* Action buttons */}
-            <div className="space-y-1">
-              {actions.map((action) => (
-                <button
-                  key={action.id}
-                  onClick={() => { setIsOpen(false); onAction(action.id); }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800/50 transition-all text-left group"
-                >
-                  <span className="text-xl">{action.emoji}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-white group-hover:text-game-teal transition-colors">
-                      {action.label}
-                    </p>
-                    <p className="text-[9px] text-slate-500">{action.desc}</p>
-                  </div>
-                  <Zap className="h-3.5 w-3.5 text-slate-600 group-hover:text-game-teal transition-colors shrink-0" />
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* FAB button */}
-      <motion.button
-        onClick={() => setIsOpen(!isOpen)}
-        className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-game-orange to-game-hot text-white shadow-xl shadow-game-orange/30 flex items-center justify-center"
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.92 }}
-        animate={!isOpen ? { boxShadow: ['0 4px 20px rgba(255,107,53,0.3)', '0 4px 30px rgba(255,107,53,0.5)', '0 4px 20px rgba(255,107,53,0.3)'] } : {}}
-        transition={{ duration: 2, repeat: Infinity }}
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="card-glass text-center px-12 py-10 max-w-sm mx-4"
+        initial={{ scale: 0.3, rotate: -10 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <motion.span
-          className="text-xl font-bold"
-          animate={isOpen ? { rotate: 45 } : { rotate: 0 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        <div className="text-7xl mb-3 animate-bounce-in">🏆</div>
+        <h2 className="font-game text-4xl text-gradient-orange mb-1" style={{ fontFamily: "'Fredoka One', cursive" }}>
+          LEVEL UP!
+        </h2>
+        <p className="text-6xl font-score font-bold" style={{ fontFamily: "'Orbitron', monospace", color: '#FFE66D' }}>
+          {level}
+        </p>
+        <p className="text-sm mt-3 mb-6" style={{ color: '#A8B2D8', fontFamily: "'Nunito', sans-serif" }}>
+          You're getting unstoppable 💪
+        </p>
+        <button
+          onClick={onClose}
+          className="btn-game btn-primary w-full"
         >
-          +
-        </motion.span>
-      </motion.button>
-    </div>
+          Keep Going! 🚀
+        </button>
+      </motion.div>
+    </motion.div>
   );
 }
 
-/* ─── Bottom Navigation ─────────────────────── */
-function BottomNavBar({ activeTab, onTabChange, badges }: {
-  activeTab: string;
-  onTabChange: (tab: string) => void;
-  badges: Record<string, number>;
-}) {
-  const tabs = [
-    { id: 'map', label: 'Map', icon: Gamepad2 },
-    { id: 'challenges', label: 'Challenges', icon: Zap },
-    { id: 'leaderboard', label: 'Leaderboard', icon: BarChart3 },
-    { id: 'profile', label: 'Profile', icon: User },
-  ];
-
+// Chest reward modal
+function ChestModal({ rewards, onClose }: { rewards: { xp: number; coins: number }; onClose: () => void }) {
   return (
-    <nav className="absolute bottom-0 left-0 right-0 z-40 bg-game-deep/80 backdrop-blur-xl border-t border-slate-700/30">
-      <div className="flex justify-around items-center h-14 max-w-lg mx-auto">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          const badge = badges[tab.id] || 0;
-
-          return (
-            <button
-              key={tab.id}
-              onClick={() => onTabChange(tab.id)}
-              className={`relative flex flex-col items-center justify-center px-5 py-1 transition-all ${
-                isActive ? 'scale-110' : ''
-              }`}
-            >
-              <div className="relative">
-                <Icon className={`h-5 w-5 ${
-                  isActive
-                    ? 'text-game-teal drop-shadow-[0_0_6px_rgba(78,205,196,0.4)]'
-                    : 'text-slate-600'
-                }`} />
-                {badge > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-game-hot text-white text-[8px] font-bold rounded-full flex items-center justify-center">
-                    {badge}
-                  </span>
-                )}
-              </div>
-              <span className={`text-[8px] font-bold uppercase tracking-widest mt-0.5 ${
-                isActive ? 'text-game-teal' : 'text-slate-600'
-              }`}>
-                {tab.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </nav>
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="card-glass text-center px-10 py-8 max-w-xs mx-4"
+        initial={{ scale: 0.4, y: 50 }}
+        animate={{ scale: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 280, damping: 22 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <motion.div
+          className="text-6xl mb-4"
+          animate={{ rotate: [0, -15, 15, -10, 10, 0] }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          🎁
+        </motion.div>
+        <h3 className="font-game text-2xl mb-4 text-gradient-gold" style={{ fontFamily: "'Fredoka One', cursive" }}>
+          Daily Chest!
+        </h3>
+        <div className="flex justify-center gap-6 mb-6">
+          <div className="text-center">
+            <div className="text-3xl font-score font-bold" style={{ color: '#4ECDC4', fontFamily: "'Orbitron', monospace" }}>
+              +{rewards.xp}
+            </div>
+            <div className="text-xs" style={{ color: '#A8B2D8' }}>XP</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-score font-bold" style={{ color: '#FFE66D', fontFamily: "'Orbitron', monospace" }}>
+              +{rewards.coins}
+            </div>
+            <div className="text-xs" style={{ color: '#A8B2D8' }}>Coins</div>
+          </div>
+        </div>
+        <button onClick={onClose} className="btn-game btn-gold w-full">
+          Awesome! 🌟
+        </button>
+      </motion.div>
+    </motion.div>
   );
 }
 
-/* ─── Main HomePage ─────────────────────────── */
-export default function StudentHomePage() {
-  const navigate = useNavigate();
-  const user = useAuthStore((state) => state.user);
-
-  const [detProgress, setDetProgress] = useState<any>(null);
-  const [simProgress, setSimProgress] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('map');
-  const [dailyChestOpened, setDailyChestOpened] = useState(false);
-  const [showChestToast, setShowChestToast] = useState(false);
-  const { triggerReward } = useReward();
-
-  const student = user?.student || {
-    name: 'Aryan',
-    level: 1,
-    totalXP: 0,
-    coins: 0,
-    streak: 3,
-  };
-
-  // Fetch progress data
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [detRes, simRes] = await Promise.all([
-          api.get('/games/problem-hunt/progress'),
-          api.get('/games/startup-simulator/progress'),
-        ]);
-        setDetProgress(detRes.data.data);
-        setSimProgress(simRes.data.data);
-      } catch (err) {
-        console.error('Failed to load dashboard data:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
-
-  // First-login → onboarding
-  useEffect(() => {
-    if (!isLoading && detProgress) {
-      const saveData = detProgress.detectiveSave
-        ? (typeof detProgress.detectiveSave === 'string'
-            ? JSON.parse(detProgress.detectiveSave)
-            : detProgress.detectiveSave)
-        : {};
-      const hasCompletedOnboarding = saveData.onboardingComplete;
-      if (!hasCompletedOnboarding && detProgress.status === 'NOT_STARTED') {
-        const timer = setTimeout(() => {
-          navigate('/student/onboarding', { replace: true });
-        }, 500);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [isLoading, detProgress, navigate]);
-
-  const handleZoneClick = useCallback((zoneId: string) => {
-    if (zoneId === 'detective') {
-      navigate('/student/games/detective');
-    } else if (zoneId === 'simulator') {
-      navigate('/student/games/simulator');
-    } else if (zoneId === 'showcase') {
-      navigate('/student/games/simulator');
-    }
-    requestAnimationFrame(() => triggerReward('zone_enter'));
-  }, [navigate, triggerReward]);
-
-  const handleChestOpen = useCallback(() => {
-    setDailyChestOpened(true);
-    setShowChestToast(true);
-    setTimeout(() => setShowChestToast(false), 3000);
-  }, []);
-
-  const handleQuickAction = useCallback((action: string) => {
-    switch (action) {
-      case 'detective': navigate('/student/games/detective'); break;
-      case 'simulator': navigate('/student/games/simulator'); break;
-      case 'challenges': navigate('/student/games'); break;
-      case 'leaderboard': navigate('/student/leaderboard'); break;
-    }
-  }, [navigate]);
-
-  const handleTabChange = useCallback((tab: string) => {
-    setActiveTab(tab);
-    switch (tab) {
-      case 'leaderboard': navigate('/student/leaderboard'); break;
-      case 'profile': navigate('/student/profile'); break;
-      case 'challenges': navigate('/student/games'); break;
+// Zone navigation handler
+function useZoneNavigation(navigate: ReturnType<typeof useNavigate>) {
+  return useCallback((zone: string) => {
+    switch (zone) {
+      case 'problem-hunt':  navigate('/student/games/detective'); break;
+      case 'startup-wars':  navigate('/student/games/simulator'); break;
+      case 'arcade':        navigate('/student/games/arcade'); break;
+      case 'showcase':      navigate('/student/games/simulator'); break;
       default: break;
     }
   }, [navigate]);
+}
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-game-deep">
-        <motion.div
-          className="flex flex-col items-center gap-4"
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-        >
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 border border-purple-500/20 flex items-center justify-center">
-            <Gamepad2 className="h-8 w-8 text-purple-400" />
-          </div>
-          <p className="text-slate-500 text-xs font-game-body">Loading your world...</p>
-        </motion.div>
-      </div>
-    );
-  }
+export default function StudentHomePage() {
+  const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+  const phaserRef = useRef<PhaserGameRef>(null);
+  const [activeTab, setActiveTab] = useState<Tab>(null);
+  const [xpPopups, setXpPopups] = useState<{ id: number; amount: number }[]>([]);
+  const [levelUpModal, setLevelUpModal] = useState<number | null>(null);
+  const [chestModal, setChestModal] = useState<{ xp: number; coins: number } | null>(null);
+  const [playerData, setPlayerData] = useState<any>(null);
+  const popupCounter = useRef(0);
+
+  const handleZone = useZoneNavigation(navigate);
+
+  // Phaser game config
+  const phaserConfig: Phaser.Types.Core.GameConfig = {
+    type: Phaser.AUTO,
+    backgroundColor: '#0D0D1A',
+    scene: [WorldMapScene],
+    scale: {
+      mode: Phaser.Scale.RESIZE,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+    },
+    render: {
+      antialias: true,
+      roundPixels: true,
+    },
+    physics: { default: 'arcade', arcade: { gravity: { x: 0, y: 0 }, debug: false } },
+  };
+
+  // Load player data and push to Phaser
+  useEffect(() => {
+    const fetchPlayer = async () => {
+      try {
+        const res = await api.get('/students/me');
+        const s = res.data.data;
+        const data = {
+          name: s.name,
+          level: s.level || 1,
+          xp: s.totalXP || 0,
+          coins: s.coins || 0,
+          streak: s.streak || 0,
+          unlockedZones: ['problem-hunt'], // At minimum
+          starsEarned: {},
+        };
+        setPlayerData(data);
+      } catch {
+        // Fallback to auth store data
+        if (user?.student) {
+          setPlayerData({
+            name: user.student.name || 'Champion',
+            level: user.student.level || 1,
+            xp: user.student.totalXP || 0,
+            coins: user.student.coins || 0,
+            streak: user.student.streak || 0,
+            unlockedZones: ['problem-hunt'],
+            starsEarned: {},
+          });
+        }
+      }
+    };
+    fetchPlayer();
+  }, [user]);
+
+  // Send player data to Phaser scene after it boots
+  const onGameReady = useCallback((game: Phaser.Game) => {
+    const sendData = () => {
+      const scene = game.scene.getScene('WorldMapScene');
+      if (scene && playerData) {
+        scene.events.emit('player_data', playerData);
+      } else {
+        setTimeout(sendData, 200);
+      }
+    };
+    setTimeout(sendData, 500);
+  }, [playerData]);
+
+  // Re-emit player data if it loads after game is ready
+  useEffect(() => {
+    if (playerData && phaserRef.current?.game) {
+      const scene = phaserRef.current.game.scene.getScene('WorldMapScene');
+      scene?.events.emit('player_data', playerData);
+    }
+  }, [playerData]);
+
+  // EventBridge listeners
+  useEffect(() => {
+    const handleZoneClick = ({ zone }: { zone: string }) => handleZone(zone);
+    const handleChestOpen = () => {
+      setChestModal({ xp: 50 + Math.floor(Math.random() * 100), coins: 25 + Math.floor(Math.random() * 50) });
+    };
+    const handleXPEarned = ({ amount }: { amount: number }) => {
+      const id = ++popupCounter.current;
+      setXpPopups((prev) => [...prev, { id, amount }]);
+    };
+    const handleLevelUp = ({ level }: { level: number }) => setLevelUpModal(level);
+
+    const handleNav = ({ tab }: { tab: Tab }) => setActiveTab(tab);
+
+    EventBridge.on(PHASER_EVENTS.ZONE_CLICKED, handleZoneClick);
+    EventBridge.on(PHASER_EVENTS.CHEST_OPENED, handleChestOpen);
+    EventBridge.on(PHASER_EVENTS.XP_EARNED, handleXPEarned);
+    EventBridge.on(PHASER_EVENTS.LEVEL_UP, handleLevelUp);
+    EventBridge.on('nav:challenges',  () => setActiveTab('challenges'));
+    EventBridge.on('nav:leaderboard', () => setActiveTab('leaderboard'));
+    EventBridge.on('nav:inventory',   () => setActiveTab('inventory'));
+    EventBridge.on('nav:profile',     () => setActiveTab('profile'));
+    EventBridge.on('nav:map',         () => setActiveTab(null));
+
+    return () => {
+      EventBridge.off(PHASER_EVENTS.ZONE_CLICKED, handleZoneClick);
+      EventBridge.off(PHASER_EVENTS.CHEST_OPENED, handleChestOpen);
+      EventBridge.off(PHASER_EVENTS.XP_EARNED, handleXPEarned);
+      EventBridge.off(PHASER_EVENTS.LEVEL_UP, handleLevelUp);
+      EventBridge.off('nav:challenges',  () => setActiveTab('challenges'));
+      EventBridge.off('nav:leaderboard', () => setActiveTab('leaderboard'));
+      EventBridge.off('nav:inventory',   () => setActiveTab('inventory'));
+      EventBridge.off('nav:profile',     () => setActiveTab('profile'));
+      EventBridge.off('nav:map',         () => setActiveTab(null));
+    };
+  }, [handleZone]);
 
   return (
-    <div className="relative w-full h-screen bg-game-deep overflow-hidden select-none">
-      {/* ─── HUD ──────────────────────────────── */}
-      <HubHud
-        streak={student.streak || 3}
-        coins={student.coins || 0}
-        level={student.level || 1}
-        xp={student.totalXP || 0}
+    <div className="relative w-full h-screen overflow-hidden" style={{ background: '#0D0D1A' }}>
+      {/* Phaser World Map canvas */}
+      <PhaserGame
+        ref={phaserRef}
+        config={phaserConfig}
+        onGameReady={onGameReady}
       />
 
-      {/* ─── World Map (full screen hero) ──────── */}
-      <div className="absolute inset-0 pt-12 pb-14">
-        <WorldMap
-          studentName={student.name || 'Explorer'}
-          studentLevel={student.level || 1}
-          coins={student.coins || 0}
-          streak={student.streak || 0}
-          detProgress={detProgress}
-          simProgress={simProgress}
-          onZoneClick={handleZoneClick}
-          onChestOpen={handleChestOpen}
-          dailyChestAvailable={!dailyChestOpened}
-        />
-      </div>
-
-      {/* ─── Quick Actions (FAB) ──────────────── */}
-      <QuickActions onAction={handleQuickAction} />
-
-      {/* ─── Bottom Nav ────────────────────────── */}
-      <BottomNavBar
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        badges={{ map: 0, challenges: 1, leaderboard: 0, profile: 0 }}
-      />
-
-      {/* ─── Chest collected toast ──────────────── */}
+      {/* XP float popups */}
       <AnimatePresence>
-        {showChestToast && (
+        {xpPopups.map(({ id, amount }) => (
+          <XPPopup
+            key={id}
+            amount={amount}
+            onDone={() => setXpPopups((p) => p.filter((x) => x.id !== id))}
+          />
+        ))}
+      </AnimatePresence>
+
+      {/* Level Up Modal */}
+      <AnimatePresence>
+        {levelUpModal !== null && (
+          <LevelUpModal level={levelUpModal} onClose={() => setLevelUpModal(null)} />
+        )}
+      </AnimatePresence>
+
+      {/* Chest Modal */}
+      <AnimatePresence>
+        {chestModal && (
+          <ChestModal rewards={chestModal} onClose={() => setChestModal(null)} />
+        )}
+      </AnimatePresence>
+
+      {/* Tab overlays (slide in on top of world map) */}
+      <AnimatePresence>
+        {activeTab && (
           <motion.div
-            className="absolute top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -30, opacity: 0 }}
-            transition={{ type: 'spring', damping: 15 }}
+            key={activeTab}
+            className="absolute inset-0 z-30 overflow-y-auto"
+            style={{
+              background: 'rgba(13,13,26,0.97)',
+              paddingBottom: '72px',
+            }}
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', stiffness: 320, damping: 32 }}
           >
-            <div className="bg-game-deep/90 backdrop-blur-md border border-game-yellow/20 rounded-xl px-4 py-2.5 flex items-center gap-2.5 shadow-2xl">
-              <Gift className="h-4 w-4 text-game-yellow" />
-              <span className="text-xs font-game-body font-bold text-white">Daily reward collected!</span>
-              <Sparkles className="h-3 w-3 text-game-yellow" />
-            </div>
+            <TabContent tab={activeTab} onClose={() => setActiveTab(null)} />
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+// Stub tab content — each will be expanded in Sprint 5
+function TabContent({ tab, onClose }: { tab: Tab; onClose: () => void }) {
+  const titles: Record<NonNullable<Tab>, string> = {
+    challenges: '⚔️ Daily Quests',
+    leaderboard: '🏆 Leaderboard',
+    inventory: '🎒 Inventory',
+    profile: '👤 My Profile',
+  };
+
+  return (
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2
+          className="text-2xl font-game text-gradient-hero"
+          style={{ fontFamily: "'Fredoka One', cursive" }}
+        >
+          {tab ? titles[tab] : ''}
+        </h2>
+        <button
+          onClick={onClose}
+          className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-110"
+          style={{ background: 'rgba(239,71,111,0.15)', border: '1px solid rgba(239,71,111,0.3)', color: '#EF476F' }}
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Placeholder content per tab — will be replaced in Sprint 5 */}
+      <div className="card-game p-8 text-center" style={{ color: '#A8B2D8', fontFamily: "'Nunito', sans-serif" }}>
+        <div className="text-4xl mb-3">🚧</div>
+        <p className="text-sm">Coming in Sprint 5 — full {tab} tab with live data!</p>
+      </div>
     </div>
   );
 }

@@ -6,6 +6,9 @@ import { generateQuizQuestions } from '../services/quizGenerator';
 import { analyzeSafetyAndSentiment } from '../services/sentimentAnalysis';
 import { redis } from '../lib/redis';
 import { emitToUser, emitToClassroom } from '../lib/socket';
+import { awardXP, awardCoins, XP_REWARDS } from '../services/gamification';
+import { checkAndAwardAchievements } from '../services/achievements';
+import { updateLeaderboard } from '../services/leaderboard';
 
 const router = Router();
 
@@ -117,62 +120,46 @@ router.get('/:slug/progress', authMiddleware, requireStudent, async (req: Authen
   }
 });
 
-// Helper function to award XP, coins, and check level up
-async function awardRewards(studentId: string, xp: number, coins: number, reason: string) {
-  const XP_THRESHOLDS = [
-    0, 100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700,
-    3250, 3850, 4500, 5200, 5950, 6750, 7600, 8500, 9450, 10450
-  ];
-
-  const student = await prisma.student.findUnique({ where: { id: studentId } });
+// Helper function to award XP + coins + achievements + leaderboard — uses proper services
+async function awardRewards(
+  studentId: string,
+  xp: number,
+  coins: number,
+  reason: string,
+  referenceKey?: string,
+  achievementContext?: { type: string; value: number }
+) {
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { schoolId: true, classroomId: true, userId: true },
+  });
   if (!student) return null;
 
-  const nextXP = student.totalXP + xp;
-  let nextLevel = student.level;
-  
-  // Calculate new level
-  for (let i = 0; i < XP_THRESHOLDS.length; i++) {
-    if (nextXP >= XP_THRESHOLDS[i]) {
-      nextLevel = i + 1;
-    } else {
-      break;
-    }
+  const [xpResult] = await Promise.all([
+    awardXP(studentId, xp, reason, referenceKey),
+    awardCoins(studentId, coins, reason, referenceKey),
+  ]);
+
+  // Update leaderboards
+  await updateLeaderboard(studentId, 'school', student.schoolId);
+  if (student.classroomId) {
+    await updateLeaderboard(studentId, 'classroom', student.classroomId);
   }
+  await updateLeaderboard(studentId, 'global', 'global');
 
-  const leveledUp = nextLevel > student.level;
-
-  const updatedStudent = await prisma.student.update({
-    where: { id: studentId },
-    data: {
-      totalXP: nextXP,
-      level: nextLevel,
-      coins: student.coins + coins,
-    }
-  });
-
-  // Log transaction
-  await prisma.coinTransaction.create({
-    data: {
+  // Check achievements if context provided
+  if (achievementContext) {
+    await checkAndAwardAchievements({
       studentId,
-      amount: coins,
-      reason,
-    }
-  });
-
-  if (leveledUp) {
-    // Trigger socket notification for level up
-    emitToUser(updatedStudent.userId, 'level_up', {
-      level: nextLevel,
-      xpValue: xp,
-      coinsValue: coins,
+      type: achievementContext.type as any,
+      value: achievementContext.value,
     });
   }
 
   return {
-    totalXP: nextXP,
-    level: nextLevel,
-    coins: updatedStudent.coins,
-    leveledUp
+    totalXP: xpResult.totalXP,
+    level: xpResult.newLevel,
+    leveledUp: xpResult.leveledUp,
   };
 }
 

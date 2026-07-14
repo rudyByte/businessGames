@@ -1,306 +1,317 @@
-import React, { useState } from 'react';
+// apps/web/src/components/auth/LoginPage.tsx
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../stores/authStore';
-import { motion } from 'framer-motion';
-import { GraduationCap, Lock, Mail, ArrowRight, ShieldAlert, BookOpen, Gamepad2, Sparkles, ExternalLink, Heart, Rocket } from 'lucide-react';
 
-const DEMO_ACCOUNTS = [
-  {
-    role: 'STUDENT' as const,
-    email: 'aryan@student.com',
-    password: 'User@123',
-    label: 'Student Demo',
-    description: 'Play quests, earn XP, climb leaderboards',
-    icon: Gamepad2,
-    color: 'purple',
-    redirect: '/student',
-  },
-  {
-    role: 'FACULTY' as const,
-    email: 'sharma@dps.in',
-    password: 'User@123',
-    label: 'Faculty Demo',
-    description: 'Track progress, create assignments',
-    icon: BookOpen,
-    color: 'blue',
-    redirect: '/faculty',
-  },
-  {
-    role: 'SUPER_ADMIN' as const,
-    email: 'admin@campusedge.in',
-    password: 'Admin@123',
-    label: 'Admin Demo',
-    description: 'Manage schools, view platform stats',
-    icon: ShieldAlert,
-    color: 'red',
-    redirect: '/admin',
-  },
-  {
-    role: 'PARENT' as const,
-    email: 'parent.goel@parent.com',
-    password: 'User@123',
-    label: 'Parent Demo',
-    description: 'Monitor your child\'s learning progress',
-    icon: Heart,
-    color: 'green',
-    redirect: '/parent',
-  },
-] as const;
+const loginSchema = z.object({
+  email: z.string().email('Enter a valid email'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+type LoginForm = z.infer<typeof loginSchema>;
+
+type Role = 'STUDENT' | 'FACULTY' | 'PARENT' | 'SUPER_ADMIN';
+const ROLES: { id: Role; icon: string; label: string; color: string }[] = [
+  { id: 'STUDENT',     icon: '🎮', label: 'Student',  color: '#FF6B35' },
+  { id: 'FACULTY',     icon: '📚', label: 'Teacher',  color: '#4ECDC4' },
+  { id: 'PARENT',      icon: '👨‍👩‍👧', label: 'Parent',   color: '#FFE66D' },
+  { id: 'SUPER_ADMIN', icon: '👑', label: 'Admin',    color: '#8B5CF6' },
+];
+
+// Particle dots for background
+function ParticleDot({ delay }: { delay: number }) {
+  const startX = Math.random() * 100;
+  return (
+    <motion.div
+      className="absolute w-1 h-1 rounded-full"
+      style={{
+        left: `${startX}%`,
+        bottom: '-4px',
+        background: ['#FF6B35', '#4ECDC4', '#FFE66D'][Math.floor(Math.random() * 3)],
+        opacity: 0.35,
+      }}
+      animate={{ y: [0, -(window.innerHeight + 10)], opacity: [0, 0.4, 0] }}
+      transition={{ duration: 12 + Math.random() * 8, delay, repeat: Infinity, ease: 'linear' }}
+    />
+  );
+}
+
+// City skyline SVG silhouette
+function CitySkyline() {
+  return (
+    <svg
+      className="absolute bottom-0 left-0 w-full"
+      viewBox="0 0 1440 180"
+      preserveAspectRatio="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M0,180 L0,140 L60,140 L60,100 L90,100 L90,60 L110,60 L110,100 L140,100 L140,80 L180,80 L180,50 L220,50 L220,80 L260,80 L260,100 L300,100 L300,120 L340,120 L340,70 L380,70 L380,50 L410,50 L410,30 L430,30 L430,50 L460,50 L460,70 L500,70 L500,90 L540,90 L540,60 L570,60 L570,40 L600,40 L600,20 L625,20 L625,40 L650,40 L650,60 L680,60 L680,80 L720,80 L720,50 L760,50 L760,30 L790,30 L790,50 L820,50 L820,70 L850,70 L850,90 L880,90 L880,60 L910,60 L910,40 L940,40 L940,70 L980,70 L980,100 L1020,100 L1020,70 L1060,70 L1060,50 L1090,50 L1090,30 L1120,30 L1120,50 L1150,50 L1150,70 L1190,70 L1190,90 L1230,90 L1230,60 L1270,60 L1270,80 L1310,80 L1310,100 L1360,100 L1360,120 L1400,120 L1400,140 L1440,140 L1440,180 Z"
+        fill="#0A0F2C"
+        opacity="0.85"
+      />
+      {/* Window lights */}
+      {[90, 110, 180, 220, 410, 430, 600, 625, 790, 1060, 1090, 1120].map((x, i) => (
+        <rect
+          key={i}
+          x={x + 5}
+          y={i % 2 === 0 ? 38 : 55}
+          width="8"
+          height="7"
+          fill="#FFE66D"
+          opacity={0.4 + Math.random() * 0.4}
+        />
+      ))}
+    </svg>
+  );
+}
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const login = useAuthStore((state) => state.login);
-  const authError = useAuthStore((state) => state.error);
-  const isLoading = useAuthStore((state) => state.isLoading);
+  const login = useAuthStore((s) => s.login);
+  const [selectedRole, setSelectedRole] = useState<Role>('STUDENT');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [loginSuccess, setLoginSuccess] = useState(false);
+  const particles = useRef(Array.from({ length: 40 }, (_, i) => i * 0.5));
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [demoLoading, setDemoLoading] = useState<string | null>(null);
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    if (!email || !password) {
-      setError('Please fill in all fields.');
-      return;
-    }
-
-    try {
-      await login({ email, passwordHash: password });
-      const user = useAuthStore.getState().user;
-      if (user) {
-        if (user.role === 'STUDENT') navigate('/student');
-        else if (user.role === 'FACULTY') navigate('/faculty');
-        else if (user.role === 'PARENT') navigate('/parent');
-        else if (user.role === 'SUPER_ADMIN') navigate('/admin');
-      }
-    } catch (err) {
-      // Handled by store
-    }
+  // Demo quick-login fill
+  const fillDemo = (role: Role) => {
+    const demos: Record<Role, { email: string; password: string }> = {
+      STUDENT:     { email: 'aryan@student.com',       password: 'User@123' },
+      FACULTY:     { email: 'sharma@dps.in',           password: 'User@123' },
+      PARENT:      { email: 'parent.goel@parent.com',  password: 'User@123' },
+      SUPER_ADMIN: { email: 'admin@campusedge.in',     password: 'Admin@123' },
+    };
+    setValue('email', demos[role].email);
+    setValue('password', demos[role].password);
   };
 
-  const handleDemoLogin = async (account: typeof DEMO_ACCOUNTS[number]) => {
-    setDemoLoading(account.role);
-    setError(null);
-
+  const onSubmit = async (data: LoginForm) => {
+    setLoading(true);
+    setError('');
     try {
-      await login({ email: account.email, passwordHash: account.password });
-      const user = useAuthStore.getState().user;
-      if (user) {
-        navigate(account.redirect);
-      }
+      await login({ email: data.email, passwordHash: data.password });
+      setLoginSuccess(true);
+      setTimeout(() => {
+        const role = useAuthStore.getState().user?.role;
+        if (role === 'STUDENT') navigate('/student');
+        else if (role === 'FACULTY') navigate('/faculty');
+        else if (role === 'PARENT') navigate('/parent');
+        else if (role === 'SUPER_ADMIN') navigate('/admin');
+      }, 600);
     } catch (err: any) {
-      setError(err?.response?.data?.error?.message || 'Demo login failed. Make sure the API server is running.');
+      setError(err?.response?.data?.error?.message || 'Login failed. Check credentials.');
     } finally {
-      setDemoLoading(null);
+      setLoading(false);
     }
-  };
-
-  const colorClasses = {
-    purple: {
-      bg: 'btn-game-secondary',
-      border: 'border-purple-500/30',
-      text: 'text-purple-400',
-      badge: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-    },
-    blue: {
-      bg: 'btn-game-ghost !border-blue-500/20 !text-blue-400',
-      border: 'border-blue-500/30',
-      text: 'text-blue-400',
-      badge: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-    },
-    red: {
-      bg: 'btn-game-danger',
-      border: 'border-red-500/30',
-      text: 'text-red-400',
-      badge: 'bg-red-500/10 text-red-400 border-red-500/20',
-    },
-    green: {
-      bg: 'btn-game-ghost !border-green-500/20 !text-green-400',
-      border: 'border-green-500/30',
-      text: 'text-green-400',
-      badge: 'bg-green-500/10 text-green-400 border-green-500/20',
-    },
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-game-gradient px-4 py-10 relative overflow-hidden">
-      {/* Animated background orbs */}
-      <motion.div 
-        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-0 left-0 w-96 h-96 bg-game-orange/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" 
-      />
-      <motion.div 
-        animate={{ scale: [1, 1.15, 1], opacity: [0.2, 0.4, 0.2] }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-        className="absolute bottom-0 right-0 w-96 h-96 bg-game-teal/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" 
-      />
+    <div
+      className="relative w-full h-screen overflow-hidden flex items-center justify-center"
+      style={{ background: 'linear-gradient(180deg, #0D0D1A 0%, #1A1A2E 60%, #0D1B3E 100%)' }}
+    >
+      {/* Particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {particles.current.map((d, i) => (
+          <ParticleDot key={i} delay={d} />
+        ))}
+      </div>
+
+      {/* City skyline */}
+      <CitySkyline />
+
+      {/* Main card */}
       <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
-        className="absolute top-1/3 left-1/4 w-48 h-48 border border-game-yellow/5 rounded-full"
-      />
-
-      <motion.div 
-        initial={{ opacity: 0, y: 30, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="max-w-sm w-full game-card rounded-2xl p-7 relative z-10"
+        className="card-glass relative z-10 w-full max-w-md mx-4 p-8"
+        initial={{ y: -40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.7, ease: [0.34, 1.56, 0.64, 1] }}
       >
-        {/* Logo + Title */}
-        <div className="text-center mb-7">
-          <motion.div 
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-            className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-game-orange to-game-orange-dark rounded-2xl mb-4 shadow-game-glow"
+        {/* Logo */}
+        <motion.div
+          className="text-center mb-6"
+          initial={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.15, duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
+        >
+          <div className="text-5xl mb-2 animate-float inline-block">🚀</div>
+          <h1
+            className="text-3xl font-game text-gradient-hero leading-tight"
+            style={{ fontFamily: "'Fredoka One', cursive" }}
           >
-            <Rocket className="h-7 w-7 text-white" />
-          </motion.div>
-          <h1 className="text-2xl font-game-round tracking-tight text-white text-glow">CampusEdge</h1>
-          <p className="font-game-body text-game-text-muted mt-1.5 text-xs">Learn Business. Build Empires. One Quest at a Time.</p>
-        </div>
+            BUILD YOUR EMPIRE
+          </h1>
+          <p className="text-sm mt-1" style={{ color: '#A8B2D8', fontFamily: "'Nunito', sans-serif" }}>
+            The only school subject where you can become a billionaire
+          </p>
+        </motion.div>
 
-        {/* Error display */}
-        {(error || authError) && (
-          <motion.div 
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="mb-4 bg-game-danger/10 border border-game-danger/20 text-game-danger p-3 rounded-xl text-[11px] font-game-body"
-          >
-            ⚠️ {error || authError}
-          </motion.div>
-        )}
-
-        {/* Demo Quick Login Buttons */}
-        <div className="space-y-2.5 mb-6">
-          <div className="flex items-center gap-1.5 mb-3">
-            <Sparkles className="h-3 w-3 text-game-yellow" />
-            <span className="text-[9px] font-game-body font-bold uppercase tracking-widest text-game-text-muted">Quick Demo Access</span>
-          </div>
-
-          {DEMO_ACCOUNTS.map((account, idx) => {
-            const Icon = account.icon;
-            const colors = colorClasses[account.color];
-            const loading = demoLoading === account.role;
-
-            return (
-              <motion.button
-                key={account.role}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 * idx }}
-                onClick={() => handleDemoLogin(account)}
-                disabled={demoLoading !== null}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white text-xs font-game-body font-bold transition-all ${colors.bg} disabled:opacity-60 disabled:cursor-not-allowed`}
-                whileTap={{ scale: 0.97 }}
+        {/* Role selector */}
+        <motion.div
+          className="grid grid-cols-4 gap-2 mb-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          {ROLES.map((role, i) => (
+            <motion.button
+              key={role.id}
+              type="button"
+              onClick={() => { setSelectedRole(role.id); fillDemo(role.id); }}
+              className="flex flex-col items-center gap-1 py-3 px-1 rounded-xl border-2 transition-all duration-200"
+              style={{
+                background: selectedRole === role.id ? `rgba(${hexToRgb(role.color)}, 0.15)` : 'rgba(22,33,62,0.6)',
+                borderColor: selectedRole === role.id ? role.color : 'rgba(78,205,196,0.1)',
+                boxShadow: selectedRole === role.id ? `0 0 16px rgba(${hexToRgb(role.color)}, 0.3)` : 'none',
+              }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 + i * 0.08 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="text-2xl">{role.icon}</span>
+              <span
+                className="text-xs font-game"
+                style={{
+                  fontFamily: "'Fredoka One', cursive",
+                  color: selectedRole === role.id ? role.color : '#6B7A9B',
+                }}
               >
-                <div className={`p-1.5 rounded-lg ${colors.badge}`}>
-                  {loading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                  ) : (
-                    <Icon className="h-4 w-4" />
-                  )}
-                </div>
-                <div className="flex-1 text-left">
-                  <span className="text-xs font-bold">{account.label}</span>
-                  <p className="text-[9px] text-white/50 font-normal">{account.description}</p>
-                </div>
-                <ExternalLink className="h-3.5 w-3.5 text-white/30" />
-              </motion.button>
-            );
-          })}
-        </div>
+                {role.label}
+              </span>
+            </motion.button>
+          ))}
+        </motion.div>
 
-        {/* Divider */}
-        <div className="relative mb-5">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-700/40" />
-          </div>
-          <div className="relative flex justify-center">
-            <span className="bg-game-dark px-3 text-[9px] text-slate-500 font-game-body font-bold uppercase tracking-wider">
-              Or sign in manually
-            </span>
-          </div>
-        </div>
-
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Form */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Email */}
           <div>
-            <label className="block text-[10px] font-game-body font-bold uppercase tracking-wider text-game-text-muted mb-1.5">
-              Email Address
-            </label>
-            <div className="relative group">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-500 group-focus-within:text-game-teal transition-colors" />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg">📧</span>
               <input
+                {...register('email')}
                 type="email"
-                required
-                className="w-full bg-game-deep/80 border border-slate-700/60 focus:border-game-teal/50 rounded-xl py-2.5 pl-10 pr-3 text-xs font-game-body text-white outline-none transition-all group-focus-within:shadow-game-glow-teal"
-                placeholder="name@school.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                autoComplete="email"
+                className="w-full pl-10 pr-4 py-3 rounded-xl text-white text-sm outline-none transition-all duration-200 font-body"
+                style={{
+                  background: '#16213E',
+                  border: errors.email ? '2px solid #EF476F' : '2px solid rgba(78,205,196,0.2)',
+                  fontFamily: "'Nunito', sans-serif",
+                }}
+                onFocus={(e) => (e.currentTarget.style.borderColor = '#4ECDC4')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = errors.email ? '#EF476F' : 'rgba(78,205,196,0.2)')}
               />
             </div>
+            {errors.email && (
+              <p className="text-xs mt-1 pl-1" style={{ color: '#EF476F', fontFamily: "'Nunito', sans-serif" }}>
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
+          {/* Password */}
           <div>
-            <label className="block text-[10px] font-game-body font-bold uppercase tracking-wider text-game-text-muted mb-1.5">
-              Password
-            </label>
-            <div className="relative group">
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-500 group-focus-within:text-game-teal transition-colors" />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg">🔒</span>
               <input
+                {...register('password')}
                 type="password"
-                required
-                className="w-full bg-game-deep/80 border border-slate-700/60 focus:border-game-teal/50 rounded-xl py-2.5 pl-10 pr-3 text-xs font-game-body text-white outline-none transition-all group-focus-within:shadow-game-glow-teal"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                autoComplete="current-password"
+                className="w-full pl-10 pr-4 py-3 rounded-xl text-white text-sm outline-none transition-all duration-200"
+                style={{
+                  background: '#16213E',
+                  border: errors.password ? '2px solid #EF476F' : '2px solid rgba(78,205,196,0.2)',
+                  fontFamily: "'Nunito', sans-serif",
+                }}
+                onFocus={(e) => (e.currentTarget.style.borderColor = '#4ECDC4')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = errors.password ? '#EF476F' : 'rgba(78,205,196,0.2)')}
               />
             </div>
+            {errors.password && (
+              <p className="text-xs mt-1 pl-1" style={{ color: '#EF476F', fontFamily: "'Nunito', sans-serif" }}>
+                {errors.password.message}
+              </p>
+            )}
           </div>
 
+          {/* Error */}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                className="px-4 py-3 rounded-xl text-sm text-center"
+                style={{ background: 'rgba(239,71,111,0.15)', border: '1px solid rgba(239,71,111,0.4)', color: '#EF476F', fontFamily: "'Nunito', sans-serif" }}
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+              >
+                ⚠️ {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Submit */}
           <motion.button
             type="submit"
-            disabled={isLoading}
-            className="w-full btn-game-primary text-sm py-3 rounded-xl"
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
+            disabled={loading || loginSuccess}
+            className="btn-game btn-primary btn-shine w-full text-lg flex items-center justify-center gap-2"
+            whileTap={loading ? {} : { scale: 0.98 }}
+            whileHover={loading ? {} : { scale: 1.02 }}
           >
-            {isLoading ? (
-              <span className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                Signing In...
-              </span>
+            {loading ? (
+              <>
+                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Logging in...
+              </>
+            ) : loginSuccess ? (
+              <>✅ Let's Go!</>
             ) : (
-              <span className="flex items-center justify-center gap-2">
-                🚀 Sign In
-                <ArrowRight className="h-4 w-4" />
-              </span>
+              <>🚀 Let's Build!</>
             )}
           </motion.button>
         </form>
 
-        <div className="text-center mt-5">
-          <p className="text-slate-500 text-[11px] font-game-body">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-game-teal hover:text-game-teal-dark font-bold transition-colors">
-              Create an account 🎮
-            </Link>
-          </p>
-        </div>
-
-        <div className="mt-4 border-t border-slate-800/30 pt-4">
-          <p className="text-center text-[9px] text-slate-600 font-game-body">
-            <Link to="/demo" className="text-game-teal/60 hover:text-game-teal transition-colors">
-              View demo overview & sitemap ↗
-            </Link>
-          </p>
+        {/* Footer links */}
+        <div className="flex justify-between items-center mt-5 text-xs" style={{ color: '#6B7A9B', fontFamily: "'Nunito', sans-serif" }}>
+          <Link to="/register" className="hover:text-teal-400 transition-colors">
+            New student? Register →
+          </Link>
+          <span className="opacity-50">CampusEdge Launchpad v2</span>
         </div>
       </motion.div>
+
+      {/* Success flash overlay */}
+      <AnimatePresence>
+        {loginSuccess && (
+          <motion.div
+            className="absolute inset-0 z-50 pointer-events-none"
+            style={{ background: 'rgba(6, 214, 160, 0.12)' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
+}
+
+// Utility
+function hexToRgb(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `${r}, ${g}, ${b}`;
 }
