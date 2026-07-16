@@ -620,6 +620,42 @@ async function main() {
 
   console.log('Level attempts created.');
 
+  // 17. Seed Achievements
+  console.log('Seeding achievements…');
+  const achievementsToSeed = [
+    { slug: 'first-steps', name: 'First Steps', description: 'Complete your first level', rarity: 'COMMON', xpBonus: 50, badgeColor: '#94A3B8', condition: '{}' },
+    { slug: 'clue-hunter', name: 'Clue Hunter', description: 'Find 10 clues in Detective mode', rarity: 'RARE', xpBonus: 150, badgeColor: '#3B82F6', condition: '{}' },
+    { slug: 'master-negotiator', name: 'Master Negotiator', description: 'Close a deal with 90%+ profit margin', rarity: 'EPIC', xpBonus: 300, badgeColor: '#A855F7', condition: '{}' },
+    { slug: 'startup-titan', name: 'Startup Titan', description: 'Build a company worth ₹1,00,000+', rarity: 'LEGENDARY', xpBonus: 500, badgeColor: '#FFD700', condition: '{}' },
+    { slug: 'perfect-pitch', name: 'Perfect Pitch', description: 'Get a grade A rating on investor pitch', rarity: 'EPIC', xpBonus: 300, badgeColor: '#EF476F', condition: '{}' },
+    { slug: 'quick-thinker', name: 'Quick Thinker', description: 'Answer a daily challenge in under 15 seconds', rarity: 'COMMON', xpBonus: 50, badgeColor: '#94A3B8', condition: '{}' },
+    { slug: 'consistency-king', name: 'Consistency King', description: 'Maintain a 5-day active playing streak', rarity: 'RARE', xpBonus: 150, badgeColor: '#3B82F6', condition: '{}' },
+  ];
+
+  for (const ach of achievementsToSeed) {
+    await prisma.achievement.upsert({
+      where: { slug: ach.slug },
+      update: {
+        name: ach.name,
+        description: ach.description,
+        rarity: ach.rarity,
+        xpBonus: ach.xpBonus,
+        badgeColor: ach.badgeColor,
+        condition: ach.condition,
+      },
+      create: {
+        slug: ach.slug,
+        name: ach.name,
+        description: ach.description,
+        rarity: ach.rarity,
+        xpBonus: ach.xpBonus,
+        badgeColor: ach.badgeColor,
+        condition: ach.condition,
+      },
+    });
+  }
+  console.log('Achievements seeded.');
+
   console.log('Seed database completed successfully!');
 }
 

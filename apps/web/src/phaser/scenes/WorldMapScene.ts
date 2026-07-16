@@ -275,6 +275,7 @@ export class WorldMapScene extends Phaser.Scene {
     const iconBg = this.add.graphics();
     iconBg.fillStyle(zone.color, zone.locked ? 0.2 : 0.9);
     iconBg.fillCircle(0, -bh - 35, 28);
+    iconBg.setName('iconBg');
     if (!zone.locked) {
       iconBg.lineStyle(2, zone.glowColor, 1);
       iconBg.strokeCircle(0, -bh - 35, 30);
@@ -292,12 +293,14 @@ export class WorldMapScene extends Phaser.Scene {
       stroke: '#0D0D1A',
       strokeThickness: 3,
     }).setOrigin(0.5);
+    label.setName('zoneLabel');
 
     const sublabel = this.add.text(0, -bh - 62, zone.sublabel, {
       fontSize: '9px',
       fontFamily: "'Nunito', sans-serif",
       color: zone.locked ? '#444466' : '#A8B2D8',
     }).setOrigin(0.5);
+    sublabel.setName('zoneSublabel');
 
     // Stars row (simple circles instead of fillStar which isn't on Graphics)
     for (let s = 0; s < 3; s++) {
@@ -312,14 +315,20 @@ export class WorldMapScene extends Phaser.Scene {
       const lockOverlay = this.add.graphics();
       lockOverlay.fillStyle(0x000000, 0.5);
       lockOverlay.fillRoundedRect(-bw / 2, -bh, bw, bh, 8);
+      lockOverlay.setName('lockOverlay');
+
       const lockIcon = this.add.text(0, -bh / 2, '🔒', {
         fontSize: '28px',
       }).setOrigin(0.5);
+      lockIcon.setName('lockIcon');
+
       const lockedBadge = this.add.text(0, -bh / 2 + 24, 'LOCKED', {
         fontSize: '10px',
         fontFamily: "'Fredoka One', cursive",
         color: '#6B7A9B',
       }).setOrigin(0.5);
+      lockedBadge.setName('lockedBadge');
+
       container.add([lockOverlay, lockIcon, lockedBadge]);
     }
 
@@ -676,8 +685,88 @@ export class WorldMapScene extends Phaser.Scene {
   private updateZoneLocks() {
     if (!this.playerData) return;
     this.playerData.unlockedZones.forEach((zoneId) => {
-      // Zone containers would need to be rebuilt here for full lock/unlock logic
-      // For now just emit event to React layer
+      const container = this.zones.get(zoneId);
+      if (container) {
+        // Destroy lock elements
+        const lockOverlay = container.getByName('lockOverlay');
+        const lockIcon = container.getByName('lockIcon');
+        const lockedBadge = container.getByName('lockedBadge');
+
+        if (lockOverlay) lockOverlay.destroy();
+        if (lockIcon) lockIcon.destroy();
+        if (lockedBadge) lockedBadge.destroy();
+
+        // Update text colors to active styles
+        const label = container.getByName('zoneLabel') as Phaser.GameObjects.Text;
+        const sublabel = container.getByName('zoneSublabel') as Phaser.GameObjects.Text;
+        if (label) label.setColor('#FFFFFF');
+        if (sublabel) sublabel.setColor('#A8B2D8');
+
+        // Restore iconBg opacity and add stroke
+        const iconBg = container.getByName('iconBg') as Phaser.GameObjects.Graphics;
+        if (iconBg) {
+          iconBg.clear();
+          // Find the original zone config for color
+          let zoneColor: number = GAME_THEME.phaser.teal;
+          let glowColor: number = 0x4ECDC4;
+          if (zoneId === 'startup-wars') { zoneColor = GAME_THEME.phaser.orange; glowColor = 0xFF6B35; }
+          else if (zoneId === 'arcade') { zoneColor = 0xF59E0B; glowColor = 0xF59E0B; }
+          else if (zoneId === 'showcase') { zoneColor = 0x8B5CF6; glowColor = 0x8B5CF6; }
+
+          iconBg.fillStyle(zoneColor, 0.9);
+          iconBg.fillCircle(0, -160 - 35, 28);
+          iconBg.lineStyle(2, glowColor, 1);
+          iconBg.strokeCircle(0, -160 - 35, 30);
+        }
+
+        // Enable hover and click interactions if they don't exist yet
+        if (!container.input) {
+          const bw = 140;
+          const bh = 160;
+
+          // Gentle float animation
+          this.tweens.add({
+            targets: container,
+            y: { from: container.y, to: container.y - 6 },
+            duration: 3000,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut',
+          });
+
+          // Glow pulse on icon
+          if (iconBg) {
+            this.tweens.add({
+              targets: iconBg,
+              alpha: { from: 0.9, to: 0.5 },
+              duration: 1500,
+              yoyo: true,
+              repeat: -1,
+            });
+          }
+
+          container.setInteractive(
+            new Phaser.Geom.Rectangle(-bw / 2, -bh - 100, bw, bh + 100),
+            Phaser.Geom.Rectangle.Contains
+          );
+          
+          container.on('pointerover', () => {
+            this.tweens.add({ targets: container, scaleX: 1.05, scaleY: 1.05, duration: 150 });
+            this.input.setDefaultCursor('pointer');
+          });
+          container.on('pointerout', () => {
+            this.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 150 });
+            this.input.setDefaultCursor('default');
+          });
+          container.on('pointerdown', () => {
+            let targetX = 200;
+            if (zoneId === 'startup-wars') targetX = 550;
+            if (zoneId === 'arcade') targetX = 900;
+            if (zoneId === 'showcase') targetX = 1250;
+            this.handleZoneClick(zoneId, targetX);
+          });
+        }
+      }
     });
   }
 

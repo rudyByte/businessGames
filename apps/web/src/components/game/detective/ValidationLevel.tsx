@@ -200,8 +200,11 @@ export default function ValidationLevel({ onComplete, discoveredClues }: Validat
     }, 800);
   };
 
-  const handleFinish = () => {
+  const handleShowGrade = () => {
     setShowGrade(true);
+  };
+
+  const handleFinish = () => {
     onComplete({
       validatedProblem: 'canteen_queue',
       respondents: 3,
@@ -542,7 +545,7 @@ export default function ValidationLevel({ onComplete, discoveredClues }: Validat
                 ↩️ Re-interview
               </motion.button>
               <motion.button
-                onClick={handleFinish}
+                onClick={handleShowGrade}
                 className="flex-[2] py-3 rounded-xl bg-gradient-to-r from-purple-600 to-green-600 hover:from-purple-700 hover:to-green-700 text-white font-bold text-sm flex items-center justify-center gap-2 border border-purple-500/20 shadow-lg"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}

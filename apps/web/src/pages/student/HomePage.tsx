@@ -8,6 +8,8 @@ import { WorldMapScene } from '../../phaser/scenes/WorldMapScene';
 import { EventBridge, PHASER_EVENTS, REACT_EVENTS } from '../../phaser/EventBridge';
 import { useAuthStore } from '../../stores/authStore';
 import api from '../../lib/api';
+import AnnouncementBanner from '../../components/announcements/AnnouncementBanner';
+
 
 // Overlay tab types
 type Tab = 'challenges' | 'leaderboard' | 'inventory' | 'profile' | null;
@@ -142,6 +144,7 @@ export default function StudentHomePage() {
   const popupCounter = useRef(0);
 
   const handleZone = useZoneNavigation(navigate);
+  const [unlockNotification, setUnlockNotification] = useState<string | null>(null);
 
   // Phaser game config
   const phaserConfig: Phaser.Types.Core.GameConfig = {
@@ -165,17 +168,64 @@ export default function StudentHomePage() {
       try {
         const res = await api.get('/students/me');
         const s = res.data.data;
+
+        // Onboarding Check
+        const detProg = s.gameProgress?.find((p: any) => p.game.slug === 'problem-hunt');
+        let onboardingComplete = false;
+        if (detProg?.detectiveSave) {
+          try {
+            const save = typeof detProg.detectiveSave === 'string' ? JSON.parse(detProg.detectiveSave) : detProg.detectiveSave;
+            if (save.onboardingComplete) {
+              onboardingComplete = true;
+            }
+          } catch (e) {
+            console.error('Error parsing detectiveSave:', e);
+          }
+        }
+        if (!onboardingComplete) {
+          navigate('/student/onboarding');
+          return;
+        }
+
+        // Dynamic zone unlocking
+        const unlockedZones = ['problem-hunt'];
+        const simProg = s.gameProgress?.find((p: any) => p.game.slug === 'startup-simulator');
+        if (detProg?.status === 'COMPLETED' || simProg) {
+          unlockedZones.push('startup-wars');
+          unlockedZones.push('arcade');
+          unlockedZones.push('showcase');
+        }
+
+        // Chapter unlock notifications
+        if (detProg) {
+          const currentCh = detProg.currentChapter || 1;
+          const lastSeenChStr = localStorage.getItem('lastSeenChapter');
+          const lastSeenCh = lastSeenChStr ? parseInt(lastSeenChStr) : 1;
+          if (currentCh > lastSeenCh) {
+            setUnlockNotification(`Chapter ${currentCh} Unlocked! 🕵️`);
+            localStorage.setItem('lastSeenChapter', currentCh.toString());
+          }
+        }
+        if (simProg && simProg.status === 'IN_PROGRESS') {
+          const lastSeenSim = localStorage.getItem('lastSeenSimUnlocked');
+          if (!lastSeenSim) {
+            setUnlockNotification("Startup Galaxy Unlocked! 🚀");
+            localStorage.setItem('lastSeenSimUnlocked', 'true');
+          }
+        }
+
         const data = {
           name: s.name,
           level: s.level || 1,
           xp: s.totalXP || 0,
           coins: s.coins || 0,
           streak: s.streak || 0,
-          unlockedZones: ['problem-hunt'], // At minimum
+          unlockedZones,
           starsEarned: {},
         };
         setPlayerData(data);
-      } catch {
+      } catch (err) {
+        console.error('Failed to fetch player data:', err);
         // Fallback to auth store data
         if (user?.student) {
           setPlayerData({
@@ -191,7 +241,7 @@ export default function StudentHomePage() {
       }
     };
     fetchPlayer();
-  }, [user]);
+  }, [user, navigate]);
 
   // Send player data to Phaser scene after it boots
   const onGameReady = useCallback((game: Phaser.Game) => {
@@ -217,8 +267,14 @@ export default function StudentHomePage() {
   // EventBridge listeners
   useEffect(() => {
     const handleZoneClick = ({ zone }: { zone: string }) => handleZone(zone);
-    const handleChestOpen = () => {
-      setChestModal({ xp: 50 + Math.floor(Math.random() * 100), coins: 25 + Math.floor(Math.random() * 50) });
+    const handleChestOpen = async () => {
+      try {
+        const res = await api.post('/games/daily-chest/claim');
+        const { xp, coins } = res.data.data;
+        setChestModal({ xp, coins });
+      } catch (err: any) {
+        alert(err.response?.data?.error?.message || 'Chest already opened today! Come back tomorrow.');
+      }
     };
     const handleXPEarned = ({ amount }: { amount: number }) => {
       const id = ++popupCounter.current;
@@ -253,12 +309,56 @@ export default function StudentHomePage() {
 
   return (
     <div className="relative w-full h-screen overflow-hidden" style={{ background: '#0D0D1A' }}>
+      {/* Floating Announcement Banner */}
+      <div className="absolute top-16 left-0 right-0 z-20 pointer-events-auto max-w-lg mx-auto">
+        <AnnouncementBanner />
+      </div>
+
       {/* Phaser World Map canvas */}
       <PhaserGame
         ref={phaserRef}
         config={phaserConfig}
         onGameReady={onGameReady}
       />
+
+      {/* Chapter Unlock Notification Overlay */}
+      <AnimatePresence>
+        {unlockNotification && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setUnlockNotification(null)}
+          >
+            <motion.div
+              className="card-glass text-center p-8 max-w-sm border border-yellow-500/30 shadow-glow-gold"
+              initial={{ scale: 0.8, rotate: -5 }}
+              animate={{ scale: 1, rotate: 0 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 280, damping: 20 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-6xl mb-4 animate-bounce">🎉</div>
+              <h2 className="font-game text-2xl mb-2 text-gradient-gold" style={{ fontFamily: "'Fredoka One', cursive" }}>
+                CONGRATULATIONS!
+              </h2>
+              <p className="text-sm text-slate-300 font-bold mb-4">
+                {unlockNotification}
+              </p>
+              <p className="text-xs text-slate-400 mb-6">
+                You've successfully unlocked a new zone on your entrepreneurship journey! Keep up the great work.
+              </p>
+              <button
+                onClick={() => setUnlockNotification(null)}
+                className="btn-game btn-gold w-full text-xs font-bold"
+              >
+                Let's Go! 🚀
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* XP float popups */}
       <AnimatePresence>

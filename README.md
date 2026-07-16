@@ -62,3 +62,51 @@ npm run dev
 | **Teacher (Ms. Sharma)** | `sharma@dps.in` | `User@123` |
 | **Parent (Mrs. Goel)** | `parent.goel@parent.com` | `User@123` |
 | **Super Admin (Rajiv Sir)** | `admin@campusedge.in` | `Admin@123` |
+
+---
+
+## Production Deployment Checklist & Post-Testing Guide 🚀
+
+### 1. Environment Config Checklist
+Create `/apps/api/.env` on your production server with:
+- `PORT=3001`
+- `NODE_ENV=production`
+- `DATABASE_URL=postgresql://user:pass@host:port/db?sslmode=require` (Supabase/AWS RDS)
+- `REDIS_URL=rediss://default:token@host:port` (Upstash / Redis Labs)
+- `JWT_SECRET=your-32-character-secure-jwt-secret`
+- `FRONTEND_URL=https://campusedge.in`
+
+Create `/apps/web/.env` with:
+- `VITE_API_URL=https://campusedge.in/api/v1`
+
+### 2. Build & Start with PM2
+To build and start in production:
+```bash
+# Install root workspace dependencies
+npm install
+
+# Build shared, backend and frontend packages
+npm run build
+
+# Run production database migrations
+npx prisma migrate deploy -w apps/api
+
+# Run PM2 process manager
+pm2 start ecosystem.config.js --env production
+```
+
+### 3. Nginx Configuration
+Place the template `nginx.conf` under `/etc/nginx/sites-available/campusedge.in`, enable it, and setup SSL certificates via Let's Encrypt Certbot:
+```bash
+sudo certbot --nginx -d campusedge.in -d www.campusedge.in
+```
+
+### 4. Post-Testing Verification Run
+Verify the following functions on the production site:
+1. **Demo Login**: Try Student/Teacher login.
+2. **Interactive Map**: Navigate between chapters and buildings.
+3. **Daily Chest**: Click on the chest on the map, claim rewards, verify it locks you out of double-claiming today.
+4. **Detective Game**: Walk around, talk to NPCs, submit problem board.
+5. **Strategy Simulator**: Setup name, strategy values, run transaction round, submit Shark Tank capstone.
+6. **Leaderboard**: Verify classroom/school standings load.
+

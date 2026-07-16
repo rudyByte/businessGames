@@ -91,6 +91,15 @@ export class SchoolInvestigationScene extends Phaser.Scene {
       loop: true,
       callback: () => this.timeElapsed++,
     });
+
+    // Check for tutorial mode
+    const progress = this.game.registry.get('progress');
+    const showTutorial = !progress || (progress.currentChapter === 1 && progress.currentLevel === 1);
+    if (showTutorial) {
+      this.time.delayedCall(1000, () => {
+        this.showTutorialDialogue();
+      });
+    }
   }
 
   private handleResumeGame() {
@@ -414,6 +423,73 @@ export class SchoolInvestigationScene extends Phaser.Scene {
       this.nearbyNPC = null;
       this.interactionPrompt.setVisible(false);
     }
+  }
+
+  private showTutorialDialogue() {
+    const W = this.scale.width;
+    const H = this.scale.height;
+
+    // Create a container for the tutorial bubble
+    const tutorialContainer = this.add.container(W / 2, 120).setScrollFactor(0).setDepth(200);
+
+    const bubbleBg = this.add.graphics();
+    bubbleBg.fillStyle(0x0D0D1A, 0.95);
+    bubbleBg.fillRoundedRect(-250, -40, 500, 80, 12);
+    bubbleBg.lineStyle(2, 0xFF6B35, 1);
+    bubbleBg.strokeRoundedRect(-250, -40, 500, 80, 12);
+
+    const avatar = this.add.text(-210, -25, '🕵️', { fontSize: '40px' });
+    
+    const message = this.add.text(-170, -28, 'Kabir: Welcome to your first investigation! Use WASD\nor Arrow keys to move. Walk left and click the "?"\nhotspot at the Notice Board to find your first clue!', {
+      fontFamily: "'Nunito', sans-serif",
+      fontSize: '12px',
+      color: '#FFFFFF',
+      lineSpacing: 4,
+    });
+
+    const closePrompt = this.add.text(230, 20, '✕', {
+      fontFamily: "'Fredoka One', cursive",
+      fontSize: '14px',
+      color: '#FF6B35',
+    }).setOrigin(0.5).setInteractive();
+
+    tutorialContainer.add([bubbleBg, avatar, message, closePrompt]);
+
+    closePrompt.on('pointerover', () => this.input.setDefaultCursor('pointer'));
+    closePrompt.on('pointerout', () => this.input.setDefaultCursor('default'));
+    closePrompt.on('pointerdown', () => {
+      this.input.setDefaultCursor('default');
+      tutorialContainer.destroy();
+    });
+
+    // Also draw a pointing arrow above the Notice Board clue (Notice board is at x: 320)
+    const arrow = this.add.text(320, 560 - 180, '👇', { fontSize: '32px' }).setOrigin(0.5);
+    this.tweens.add({
+      targets: arrow,
+      y: 560 - 160,
+      duration: 600,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+
+    // Destroy arrow when notice board is discovered
+    const checkInterval = this.time.addEvent({
+      delay: 500,
+      loop: true,
+      callback: () => {
+        const noticeBoardClue = this.clues.find(c => c.id === 'notice_board');
+        if (!noticeBoardClue || noticeBoardClue.discovered) {
+          arrow.destroy();
+          checkInterval.destroy();
+        }
+      }
+    });
+
+    // Auto-destroy bubble after 10 seconds if not closed
+    this.time.delayedCall(10000, () => {
+      if (tutorialContainer.active) tutorialContainer.destroy();
+    });
   }
 
   shutdown() {

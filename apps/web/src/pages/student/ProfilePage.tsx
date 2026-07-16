@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../stores/authStore';
 import { Star, Award, Shield, Edit3, Save, Coins, Hexagon, User, Settings } from 'lucide-react';
@@ -26,13 +26,39 @@ export default function ProfilePage() {
     avatarConfig: defaultAvatar,
   };
 
-  const currentAvatar = student.avatarConfig || defaultAvatar;
+  let parsedAvatar = defaultAvatar;
+  if (student.avatarConfig) {
+    try {
+      parsedAvatar = typeof student.avatarConfig === 'string'
+        ? JSON.parse(student.avatarConfig)
+        : student.avatarConfig;
+    } catch (e) {
+      parsedAvatar = defaultAvatar;
+    }
+  }
 
-  const [skinTone, setSkinTone] = useState(currentAvatar.skinTone);
-  const [hairStyle, setHairStyle] = useState(currentAvatar.hairStyle);
-  const [hairColor, setHairColor] = useState(currentAvatar.hairColor);
-  const [uniformColor, setUniformColor] = useState(currentAvatar.uniformColor);
-  const [expression, setExpression] = useState(currentAvatar.expression);
+  const [skinTone, setSkinTone] = useState(parsedAvatar.skinTone || defaultAvatar.skinTone);
+  const [hairStyle, setHairStyle] = useState(parsedAvatar.hairStyle || defaultAvatar.hairStyle);
+  const [hairColor, setHairColor] = useState(parsedAvatar.hairColor || defaultAvatar.hairColor);
+  const [uniformColor, setUniformColor] = useState(parsedAvatar.uniformColor || defaultAvatar.uniformColor);
+  const [expression, setExpression] = useState(parsedAvatar.expression || defaultAvatar.expression);
+
+  useEffect(() => {
+    if (student.avatarConfig) {
+      try {
+        const parsed = typeof student.avatarConfig === 'string'
+          ? JSON.parse(student.avatarConfig)
+          : student.avatarConfig;
+        if (parsed) {
+          setSkinTone(parsed.skinTone || defaultAvatar.skinTone);
+          setHairStyle(parsed.hairStyle || defaultAvatar.hairStyle);
+          setHairColor(parsed.hairColor || defaultAvatar.hairColor);
+          setUniformColor(parsed.uniformColor || defaultAvatar.uniformColor);
+          setExpression(parsed.expression || defaultAvatar.expression);
+        }
+      } catch (e) {}
+    }
+  }, [student.avatarConfig]);
 
   const skinTones = [
     { name: 'Fair', value: '#F3D2C1' },

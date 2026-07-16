@@ -1,45 +1,79 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Trophy, Building, ArrowRight, Clock, Zap } from 'lucide-react';
+import api from '../../lib/api';
 
-const games = [
-  {
-    id: 'detective',
-    name: 'Problem Hunt Detective',
+const GAME_UI_META: Record<string, any> = {
+  'problem-hunt': {
     tagline: 'Find problems. Build solutions.',
-    description: 'Step into the shoes of Kabir, a junior problem detective. Walk through 3D environments like school canteens and local markets, search for clue objects, and interview NPCs to discover hidden problems.',
     icon: Trophy,
     color: '#FF6B35',
     gradient: 'from-orange-600/20 to-orange-700/5',
     borderColor: 'rgba(255,107,53,0.3)',
-    stats: [
-      { label: 'Chapters', value: '3', icon: Clock },
-      { label: 'Levels', value: '10 each', icon: Zap },
-    ],
     cta: 'Start Investigation',
     ctaColor: 'btn-game-primary',
+    targetRoute: '/student/games/detective',
   },
-  {
-    id: 'simulator',
-    name: 'Startup Simulator',
+  'startup-simulator': {
     tagline: 'Build your empire from scratch.',
-    description: 'Build your own brand, hire complementary team members, set selling prices, run advertising campaigns, and execute weekly business rounds. End with pitching your traction to Shark Tank!',
     icon: Building,
     color: '#4ECDC4',
     gradient: 'from-teal-600/20 to-teal-700/5',
     borderColor: 'rgba(78,205,196,0.3)',
-    stats: [
-      { label: 'Chapters', value: '4', icon: Clock },
-      { label: 'Rounds', value: '12 weeks', icon: Zap },
-    ],
     cta: 'Launch Startup',
     ctaColor: 'btn-game-secondary',
+    targetRoute: '/student/games/simulator',
   },
-];
+};
 
 export default function GamesPage() {
   const navigate = useNavigate();
+  const [games, setGames] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadGames() {
+      try {
+        const res = await api.get('/games');
+        const dbGames = res.data.data;
+        const merged = dbGames.map((g: any) => {
+          const meta = GAME_UI_META[g.slug] || {
+            tagline: 'Empower your entrepreneur journey.',
+            icon: Trophy,
+            color: '#4ECDC4',
+            gradient: 'from-teal-600/20 to-teal-700/5',
+            borderColor: 'rgba(78,205,196,0.3)',
+            cta: 'Play Now',
+            ctaColor: 'btn-game-primary',
+            targetRoute: `/student/games/${g.slug}`,
+          };
+          return {
+            ...g,
+            ...meta,
+            stats: [
+              { label: 'Chapters', value: `${g.totalChapters || 3}`, icon: Clock },
+              { label: 'Status', value: 'Active', icon: Zap },
+            ],
+          };
+        });
+        setGames(merged);
+      } catch (err) {
+        console.error('Failed to load games catalog:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadGames();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="w-10 h-10 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
@@ -55,7 +89,6 @@ export default function GamesPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {games.map((game, idx) => {
           const Icon = game.icon;
-          const isDetective = game.id === 'detective';
 
           return (
             <motion.div
@@ -116,7 +149,7 @@ export default function GamesPage() {
 
                 {/* Stats */}
                 <div className="flex gap-4">
-                  {game.stats.map((stat, i) => {
+                  {game.stats.map((stat: any, i: number) => {
                     const StatIcon = stat.icon;
                     return (
                       <div
@@ -132,7 +165,7 @@ export default function GamesPage() {
 
                 {/* CTA Button */}
                 <button
-                  onClick={() => navigate(isDetective ? '/student/games/detective' : '/student/games/simulator')}
+                  onClick={() => navigate(game.targetRoute)}
                   className={`btn-game w-full ${game.ctaColor}`}
                 >
                   {game.cta} <ArrowRight className="h-4 w-4" />

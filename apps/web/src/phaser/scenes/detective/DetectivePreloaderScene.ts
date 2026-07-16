@@ -55,7 +55,7 @@ export class DetectivePreloaderScene extends Phaser.Scene {
   private generateCharacterSprites() {
     // Generate 'kabir' spritesheet programmatically
     const createFrame = (color: number, angle: number) => {
-      const graphics = this.make.graphics({ x: 0, y: 0, add: false });
+      const graphics = this.make.graphics({ x: 0, y: 0 }, false);
       graphics.fillStyle(0x000000, 0.3);
       graphics.fillEllipse(24, 58, 16, 4); // shadow
 
@@ -96,7 +96,7 @@ export class DetectivePreloaderScene extends Phaser.Scene {
     f2.destroy();
 
     // NPC 1 (Teacher)
-    const npc1 = this.make.graphics({ x: 0, y: 0, add: false });
+    const npc1 = this.make.graphics({ x: 0, y: 0 }, false);
     npc1.fillStyle(0x8B5CF6, 1);
     npc1.fillRect(16, 26, 16, 30);
     npc1.fillStyle(0xFFD3B6, 1);
@@ -105,7 +105,7 @@ export class DetectivePreloaderScene extends Phaser.Scene {
     npc1.destroy();
 
     // NPC 2 (Student)
-    const npc2 = this.make.graphics({ x: 0, y: 0, add: false });
+    const npc2 = this.make.graphics({ x: 0, y: 0 }, false);
     npc2.fillStyle(0x10B981, 1);
     npc2.fillRect(16, 26, 16, 30);
     npc2.fillStyle(0xFFD3B6, 1);
@@ -114,7 +114,7 @@ export class DetectivePreloaderScene extends Phaser.Scene {
     npc2.destroy();
 
     // NPC 3 (Vendor)
-    const npc3 = this.make.graphics({ x: 0, y: 0, add: false });
+    const npc3 = this.make.graphics({ x: 0, y: 0 }, false);
     npc3.fillStyle(0xF59E0B, 1);
     npc3.fillRect(16, 22, 16, 34);
     npc3.fillStyle(0xFFD3B6, 1);
@@ -125,7 +125,7 @@ export class DetectivePreloaderScene extends Phaser.Scene {
 
   private generateEnvironmentTextures() {
     // Generate particle texture
-    const p = this.make.graphics({ x: 0, y: 0, add: false });
+    const p = this.make.graphics({ x: 0, y: 0 }, false);
     p.fillStyle(0xFFFFFF, 1);
     p.fillCircle(4, 4, 4);
     p.generateTexture('particle', 8, 8);

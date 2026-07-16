@@ -8,7 +8,9 @@ import { redis } from '../lib/redis';
 import { emitToUser, emitToClassroom } from '../lib/socket';
 import { awardXP, awardCoins, XP_REWARDS } from '../services/gamification';
 import { checkAndAwardAchievements } from '../services/achievements';
-import { updateLeaderboard } from '../services/leaderboard';
+import { updateLeaderboard, getLeaderboard } from '../services/leaderboard';
+import { getDailyChallenge } from '../services/dailyChallenge';
+
 
 const router = Router();
 
@@ -45,6 +47,160 @@ router.get('/', authMiddleware, async (req: AuthenticatedRequest, res: Response,
     next(error);
   }
 });
+
+// POST /api/v1/games/daily-chest/claim
+router.post('/daily-chest/claim', authMiddleware, requireStudent, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const student = await prisma.student.findUnique({ where: { userId: req.user!.id } });
+    if (!student) throw new Error('Student missing');
+
+    const now = new Date();
+    const dateSuffix = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+    const claimKey = `daily-chest:claimed:${student.id}:${dateSuffix}`;
+
+    const alreadyClaimed = await redis.get(claimKey);
+    if (alreadyClaimed) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'ALREADY_CLAIMED', message: 'You have already claimed today\'s chest!' }
+      });
+    }
+
+    // Mark as claimed for 28 hours (covering full day + timezone wiggle room)
+    await redis.set(claimKey, '1', 60 * 60 * 28);
+
+    const xpReward = 50 + Math.floor(Math.random() * 100);
+    const coinReward = 25 + Math.floor(Math.random() * 50);
+
+    await awardRewards(student.id, xpReward, coinReward, 'Claimed Daily Chest', `chest:${student.id}:${dateSuffix}`);
+
+    return res.json({
+      success: true,
+      data: {
+        xp: xpReward,
+        coins: coinReward
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /api/v1/games/leaderboard
+router.get('/leaderboard', authMiddleware, requireStudent, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const student = await prisma.student.findUnique({ where: { userId: req.user!.id } });
+    if (!student) throw new Error('Student missing');
+
+    const period = (req.query.period as any) || 'all-time';
+    const type = (req.query.type as any) || 'global';
+
+    let scopeId = 'global';
+    if (type === 'classroom') {
+      scopeId = student.classroomId || '';
+    } else if (type === 'school') {
+      scopeId = student.schoolId;
+    }
+
+    if (type === 'classroom' && !scopeId) {
+      return res.json({ success: true, data: [] });
+    }
+
+    const leaderboard = await getLeaderboard(type, scopeId, period, 20);
+
+    return res.json({ success: true, data: leaderboard });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /api/v1/games/daily-challenge
+router.get('/daily-challenge', authMiddleware, requireStudent, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const student = await prisma.student.findUnique({ where: { userId: req.user!.id } });
+    if (!student) throw new Error('Student missing');
+
+    const challenge = await getDailyChallenge(student.id);
+
+    // Also check if already completed today
+    const now = new Date();
+    const dateSuffix = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+    const submitKey = `daily-challenge:submitted:${student.id}:${dateSuffix}`;
+    const alreadySubmitted = await redis.get(submitKey);
+
+    return res.json({
+      success: true,
+      data: {
+        ...challenge,
+        completedToday: !!alreadySubmitted
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /api/v1/games/daily-challenge/submit
+router.post('/daily-challenge/submit', authMiddleware, requireStudent, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const student = await prisma.student.findUnique({ where: { userId: req.user!.id } });
+    if (!student) throw new Error('Student missing');
+
+    const { answerIndex } = req.body;
+
+    const now = new Date();
+    const dateSuffix = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+    const submitKey = `daily-challenge:submitted:${student.id}:${dateSuffix}`;
+
+    const alreadySubmitted = await redis.get(submitKey);
+    if (alreadySubmitted) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'ALREADY_COMPLETED', message: 'You have already submitted today\'s challenge!' }
+      });
+    }
+
+    const challenge = await getDailyChallenge(student.id);
+
+    let isCorrect = false;
+    if (challenge.type === 'QUIZ_SPRINT') {
+      const correctIdx = challenge.content.questions?.[0]?.correctIndex ?? 1;
+      isCorrect = (parseInt(answerIndex) === correctIdx);
+    } else {
+      const correctIdx = challenge.content.correctIndex ?? 1;
+      isCorrect = (parseInt(answerIndex) === correctIdx);
+    }
+
+    // Set lock key for 28 hours
+    await redis.set(submitKey, isCorrect ? 'CORRECT' : 'INCORRECT', 60 * 60 * 28);
+
+    if (isCorrect) {
+      await awardRewards(student.id, challenge.xpReward, challenge.coinReward, `Completed Daily Challenge: ${challenge.title}`, `daily-challenge:${student.id}:${dateSuffix}`);
+      return res.json({
+        success: true,
+        data: {
+          correct: true,
+          xp: challenge.xpReward,
+          coins: challenge.coinReward,
+          message: 'Excellent! Reward credited.'
+        }
+      });
+    } else {
+      return res.json({
+        success: true,
+        data: {
+          correct: false,
+          message: 'Incorrect answer. Try again tomorrow!'
+        }
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+
 
 // GET /api/v1/games/:slug
 router.get('/:slug', authMiddleware, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {

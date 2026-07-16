@@ -2,6 +2,8 @@
 import { prisma } from '../lib/prisma';
 import { redis } from '../lib/redis';
 import { emitToUser } from '../lib/socket';
+import { updateLeaderboard } from './leaderboard';
+
 
 // ─── XP Level Table (Levels 1–20) ─────────────────────────────
 const XP_THRESHOLDS = [
@@ -92,7 +94,7 @@ export async function awardXP(
   const leveledUp = newLevel > previousLevel;
 
   // Update student XP + level in DB
-  await prisma.student.update({
+  const updatedStudent = await prisma.student.update({
     where: { id: studentId },
     data: {
       totalXP: newTotalXP,
@@ -100,6 +102,19 @@ export async function awardXP(
       lastActiveAt: new Date(),
     },
   });
+
+  // Update Redis leaderboards asynchronously
+  try {
+    await updateLeaderboard(studentId, 'global', 'global');
+    if (updatedStudent.schoolId) {
+      await updateLeaderboard(studentId, 'school', updatedStudent.schoolId);
+    }
+    if (updatedStudent.classroomId) {
+      await updateLeaderboard(studentId, 'classroom', updatedStudent.classroomId);
+    }
+  } catch (err) {
+    console.error('Failed to update leaderboards:', err);
+  }
 
   // Log coin/XP transaction (positive amount = XP equivalent in coins)
   await prisma.coinTransaction.create({
